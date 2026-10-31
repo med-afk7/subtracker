@@ -12,7 +12,7 @@ interface AuthContextValue {
   logout: () => Promise<void>;
   updateTimezone: (timezone: string) => Promise<void>;
   changePassword: (currentPassword: string, newPassword: string) => Promise<void>;
-  deleteAccount: (password: string) => Promise<void>;
+  deleteAccount: (confirmation: accountApi.DeleteConfirmation) => Promise<void>;
   notice: string | null;
   clearNotice: () => void;
 }
@@ -20,7 +20,7 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 // The browser's timezone, sent at sign-up so reminders use the user's local "today"
-const browserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
+export const browserTimezone = () => Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -53,8 +53,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updateTimezone: async (timezone) => setUser(await accountApi.updateAccount({ timezone })),
     changePassword: (currentPassword, newPassword) =>
       authApi.changePassword(currentPassword, newPassword),
-    deleteAccount: async (password) => {
-      await accountApi.deleteAccount(password);
+    deleteAccount: async (confirmation) => {
+      await accountApi.deleteAccount(confirmation);
       // Clearing the user sends the protected page to /login, which shows this notice
       setNotice('Your account and its data were deleted.');
       setUser(null);

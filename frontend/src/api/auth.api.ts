@@ -24,3 +24,9 @@ export const changePassword = (currentPassword: string, newPassword: string) =>
     body: { currentPassword, newPassword },
   });
 export const getCurrentUser = () => request<User>('/auth/me');
+export const getProviders = () => request<{ google: boolean }>('/auth/providers');
+
+// "Continue with Google" is a full-page navigation (Google's page can't load inside fetch),
+// so this is a link target rather than an API call
+export const googleSignInUrl = (timezone: string) =>
+  `/api/auth/google/start?${new URLSearchParams({ timezone })}`;

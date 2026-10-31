@@ -4,6 +4,8 @@ export interface User {
   id: string;
   email: string;
   timezone: string;
+  // false when the account only signs in with Google
+  hasPassword: boolean;
   createdAt: string;
 }
 

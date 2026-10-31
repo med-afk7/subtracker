@@ -13,8 +13,8 @@ validation, pino logging; React + Vite frontend; Vitest + Supertest; GitHub Acti
 
 ## What it does
 
-- **Accounts:** email + password with email verification, password reset, server-side sessions,
-  rate limiting, timezone, account deletion.
+- **Accounts:** email + password with email verification, or "Continue with Google"; password
+  reset, server-side sessions, rate limiting, timezone, account deletion.
 - **Subscriptions:** pick from about 70 popular services (Netflix, Spotify, iCloud+...) with
   their logos, or add your own; any currency, weekly to multi-year billing, cancel/archive
   lifecycle, price history kept when prices change, search/filter/sort/pagination, CSV export.
@@ -46,6 +46,10 @@ validation, pino logging; React + Vite frontend; Vitest + Supertest; GitHub Acti
   top of `SameSite` cookies; per-IP and per-email rate limits; every query scoped to the owner
   (another user's id is a 404, tested on every endpoint); CSV formula-injection protection;
   security headers; secrets redacted from logs.
+- **Google sign-in** is a server-side OpenID Connect code flow with PKCE, `state` and `nonce`
+  held in a short-lived cookie; ID token claims are checked (issuer, audience, expiry, nonce,
+  verified email). Accounts are matched by Google's stable user id, linked by verified email,
+  and an unverified password sign-up on the same address loses its password on takeover.
 
 ## Local setup
 

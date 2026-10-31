@@ -1,6 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { errorMessage } from '../api/client';
 import type { Credentials } from '../types';
+import GoogleButton from './GoogleButton';
 
 interface AuthFormProps {
   title: string;
@@ -44,6 +45,8 @@ export default function AuthForm({
   return (
     <form className="card auth-card" onSubmit={handleSubmit}>
       <h1>{title}</h1>
+
+      <GoogleButton withDivider />
 
       <label>
         Email

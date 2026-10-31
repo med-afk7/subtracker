@@ -3,5 +3,7 @@ import { request } from './client';
 
 export const updateAccount = (changes: { timezone: string }) =>
   request<User>('/account', { method: 'PATCH', body: changes });
-export const deleteAccount = (password: string) =>
-  request<void>('/account', { method: 'DELETE', body: { password } });
+// Accounts with a password confirm with it; Google-only accounts type their email instead
+export type DeleteConfirmation = { password: string } | { confirmEmail: string };
+export const deleteAccount = (confirmation: DeleteConfirmation) =>
+  request<void>('/account', { method: 'DELETE', body: confirmation });

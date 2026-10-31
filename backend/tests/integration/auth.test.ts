@@ -140,7 +140,9 @@ describe('login', () => {
     const header = ([] as string[]).concat(res.headers['set-cookie'] ?? []).join(';');
     expect(header).toMatch(/HttpOnly/);
     expect(header).toMatch(/SameSite=Lax/);
-    expect(JSON.stringify(res.body)).not.toMatch(/hash|password/i);
+    // Only the boolean `hasPassword`, never the hash itself
+    expect(res.body.data.hasPassword).toBe(true);
+    expect(JSON.stringify(res.body)).not.toMatch(/hash|argon|"password/i);
 
     const token = sessionCookieFrom(res).slice('sid='.length);
     const stored = await db.query.sessions.findFirst({ where: eq(sessions.id, hashToken(token)) });
@@ -156,6 +158,7 @@ describe('sessions', () => {
       id: expect.any(String),
       email: 'ada@example.com',
       timezone: 'UTC',
+      hasPassword: true,
       createdAt: expect.any(String),
     });
   });

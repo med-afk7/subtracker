@@ -2,6 +2,7 @@ import ChangePasswordForm from '../components/account/ChangePasswordForm';
 import DeleteAccountSection from '../components/account/DeleteAccountSection';
 import ReminderHistory from '../components/account/ReminderHistory';
 import ReminderSettings from '../components/account/ReminderSettings';
+import SetPasswordSection from '../components/account/SetPasswordSection';
 import TimezoneForm from '../components/account/TimezoneForm';
 import { useCurrentUser } from '../context/AuthContext';
 import { formatDate } from '../utils/format';
@@ -42,7 +43,7 @@ export default function AccountPage() {
 
       <section className="card">
         <h2>Password</h2>
-        <ChangePasswordForm />
+        {user.hasPassword ? <ChangePasswordForm /> : <SetPasswordSection />}
       </section>
 
       <section className="card danger-zone">

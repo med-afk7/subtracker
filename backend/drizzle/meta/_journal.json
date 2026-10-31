@@ -50,6 +50,13 @@
       "when": 1793452915622,
       "tag": "0006_subscription_service",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793461259917,
+      "tag": "0007_google_login",
+      "breakpoints": true
     }
   ]
 }

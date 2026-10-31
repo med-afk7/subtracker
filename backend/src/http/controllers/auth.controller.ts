@@ -16,7 +16,7 @@ import {
 
 const CHECK_EMAIL = { message: 'Check your email for a link to continue.' };
 
-function setSessionCookie(res: Response, token: string) {
+export function setSessionCookie(res: Response, token: string) {
   res.cookie(SESSION_COOKIE_NAME, token, sessionCookieOptions);
 }
 

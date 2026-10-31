@@ -10,4 +10,4 @@ npm-debug.log*
 
 # Neon project link (local context)
 .neon
-forclaud
+forclaud*.tsbuildinfo

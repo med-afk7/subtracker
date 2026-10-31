@@ -83,7 +83,8 @@ export async function resendVerification(email: string): Promise<void> {
 
 export async function login(email: string, password: string): Promise<LoginResult> {
   const user = await findUserByEmail(email);
-  if (!user) {
+  // Unknown email, or a Google-only account without a password: same answer, same timing
+  if (!user?.passwordHash) {
     await spendPasswordCheckTime(password);
     throw invalidCredentials();
   }
@@ -131,7 +132,14 @@ export async function changePassword(
   newPassword: string,
 ): Promise<string> {
   const user = await findUserById(userId);
-  if (!user || !(await verifyPassword(user.passwordHash, currentPassword))) {
+  if (user && !user.passwordHash) {
+    throw new AppError(
+      400,
+      'NO_PASSWORD',
+      'Your account signs in with Google. Set a password through the emailed link instead.',
+    );
+  }
+  if (!user?.passwordHash || !(await verifyPassword(user.passwordHash, currentPassword))) {
     throw invalidPassword();
   }
 
@@ -143,9 +151,19 @@ export async function changePassword(
   });
 }
 
-export async function deleteAccount(userId: string, password: string): Promise<void> {
+// Confirmed with the password, or, for Google-only accounts, by typing the email address
+export async function deleteAccount(
+  userId: string,
+  confirmation: { password?: string; confirmEmail?: string },
+): Promise<void> {
   const user = await findUserById(userId);
-  if (!user || !(await verifyPassword(user.passwordHash, password))) throw invalidPassword();
+  if (!user) throw invalidPassword();
+  if (user.passwordHash) {
+    const { password } = confirmation;
+    if (!password || !(await verifyPassword(user.passwordHash, password))) throw invalidPassword();
+  } else if (confirmation.confirmEmail?.trim().toLowerCase() !== user.email) {
+    throw new AppError(400, 'INVALID_CONFIRMATION', 'Type your email address to confirm');
+  }
 
   // Foreign keys cascade: sessions, tokens and subscriptions go with the user
   await db.delete(users).where(eq(users.id, userId));

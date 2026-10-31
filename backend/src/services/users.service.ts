@@ -6,6 +6,8 @@ export interface PublicUser {
   id: string;
   email: string;
   timezone: string;
+  // false for accounts that only sign in with Google
+  hasPassword: boolean;
   createdAt: string;
 }
 
@@ -15,6 +17,7 @@ export function toPublicUser(user: UserRow): PublicUser {
     id: user.id,
     email: user.email,
     timezone: user.timezone,
+    hasPassword: user.passwordHash !== null,
     createdAt: user.createdAt.toISOString(),
   };
 }

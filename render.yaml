@@ -31,5 +31,9 @@ services:
         sync: false
       - key: EMAIL_FROM # e.g. Subtracker <reminders@your-domain.com>
         sync: false
+      - key: GOOGLE_CLIENT_ID # optional: "Continue with Google" (see docs/deployment.md)
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
       - key: CRON_SECRET # also add as a GitHub secret for the Reminders workflow
         generateValue: true

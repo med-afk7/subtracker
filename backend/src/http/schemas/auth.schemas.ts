@@ -39,4 +39,11 @@ export const changePasswordSchema = z.object({
 });
 
 export const updateAccountSchema = z.object({ timezone: timezoneSchema });
-export const deleteAccountSchema = z.object({ password: passwordSchema });
+// Accounts with a password confirm with it; Google-only accounts type their email instead
+export const deleteAccountSchema = z.object({
+  password: passwordSchema.optional(),
+  confirmEmail: z.string().max(320).optional(),
+});
+
+// GET /auth/google/start?timezone=... (the browser's timezone, used if an account is created)
+export const googleStartSchema = z.object({ timezone: z.string().max(100).optional() });

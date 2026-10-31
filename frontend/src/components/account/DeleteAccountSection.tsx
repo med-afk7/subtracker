@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { errorMessage } from '../../api/client';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, useCurrentUser } from '../../context/AuthContext';
 
-// Two steps: reveal the form, then confirm with the password
+// Two steps: reveal the form, then confirm with the password (or the email, for Google-only accounts)
 export default function DeleteAccountSection() {
   const { deleteAccount } = useAuth();
+  const { email, hasPassword } = useCurrentUser();
   const [isConfirming, setIsConfirming] = useState(false);
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -15,7 +16,7 @@ export default function DeleteAccountSection() {
     setError('');
     setIsDeleting(true);
     try {
-      await deleteAccount(password);
+      await deleteAccount(hasPassword ? { password } : { confirmEmail: password });
     } catch (err) {
       setError(errorMessage(err));
       setIsDeleting(false);
@@ -41,14 +42,18 @@ export default function DeleteAccountSection() {
   return (
     <form className="stack-form" onSubmit={handleSubmit}>
       <p className="section-intro">
-        <strong>Enter your password to permanently delete your account and all its data.</strong>
+        <strong>
+          {hasPassword
+            ? 'Enter your password to permanently delete your account and all its data.'
+            : `Type ${email} to permanently delete your account and all its data.`}
+        </strong>
       </p>
       <div className="inline-field">
         <label>
-          Password
+          {hasPassword ? 'Password' : 'Your email'}
           <input
-            type="password"
-            autoComplete="current-password"
+            type={hasPassword ? 'password' : 'text'}
+            autoComplete={hasPassword ? 'current-password' : 'off'}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required

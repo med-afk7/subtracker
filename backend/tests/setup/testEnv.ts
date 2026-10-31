@@ -30,6 +30,9 @@ export function loadTestEnv(): string {
   // High enough that normal tests never hit it; rate-limit.test.ts lowers it
   process.env.AUTH_RATE_LIMIT_MAX ??= '1000';
   process.env.CRON_SECRET = 'test-cron-secret-that-is-at-least-32-characters';
+  // Fake credentials: tests swap in a fake token client, so Google is never called
+  process.env.GOOGLE_CLIENT_ID = 'test-client-id.apps.googleusercontent.com';
+  process.env.GOOGLE_CLIENT_SECRET = 'test-client-secret';
   // Never send real email from tests
   delete process.env.RESEND_API_KEY;
   return testUrl;

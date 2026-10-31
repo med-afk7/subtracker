@@ -1532,3 +1532,352 @@ a.item-name:hover {
   gap: 0.6rem;
   font-weight: 500;
 }
+
+/* ---------- "Continue with Google" ---------- */
+/* Two classes so it beats the generic `a.button` rule */
+.button.google-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+  text-decoration: none;
+}
+
+.button.google-button:hover {
+  background: #fff;
+  border-color: #d9cdbd;
+  color: var(--text);
+}
+
+.google-logo {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* "──── or ────" between Google and the email form */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.or-divider::before,
+.or-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* Links on the right of the header for logged-out visitors */
+.guest-links {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.guest-links a:not(.button) {
+  padding: 0.4rem 0.75rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.guest-links a:not(.button):hover,
+.guest-links a.active {
+  color: var(--text);
+}
+
+.guest-links .button {
+  text-decoration: none;
+}
+
+.button.large {
+  padding: 0.75rem 1.4rem;
+  font-size: 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.button.large:hover {
+  color: #fff;
+}
+
+/* ---------- Landing page ---------- */
+.landing {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+.landing-hero {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr;
+  gap: 3.5rem;
+  align-items: center;
+  padding-block: 4.5rem 3.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.9rem;
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.landing-copy h1 {
+  font-size: clamp(2.2rem, 4.6vw, 3.4rem);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.25rem;
+}
+
+.landing-lede {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  color: #5a4f45;
+  margin: 0 0 2rem;
+  max-width: 34rem;
+}
+
+.landing-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.1rem;
+}
+
+.landing-actions .google-button {
+  padding: 0.75rem 1.3rem;
+  font-size: 1rem;
+}
+
+/* The sample dashboard card, with a reminder note tucked under its corner */
+.landing-preview {
+  position: relative;
+  padding-bottom: 3rem;
+}
+
+.preview-card {
+  padding: 1.4rem 1.5rem 1.6rem;
+}
+
+.preview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 0.75rem;
+}
+
+.preview-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.preview-row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.preview-name {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  font-weight: 500;
+}
+
+.preview-amount {
+  font-variant-numeric: tabular-nums;
+  font-weight: 500;
+}
+
+.preview-total {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.9rem;
+  font-size: 1.05rem;
+}
+
+.preview-total strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.preview-reminder {
+  position: absolute;
+  left: -1.5rem;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1.1rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 6px 24px rgba(60, 40, 20, 0.1);
+}
+
+.preview-reminder > span:last-child {
+  display: grid;
+}
+
+.preview-reminder-dot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+
+.landing-logos {
+  text-align: center;
+  padding-block: 1.5rem 3.5rem;
+}
+
+.logo-strip {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.landing-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 1.25rem;
+}
+
+.feature-card {
+  padding: 1.5rem;
+}
+
+.feature-card h2 {
+  font-size: 1.1rem;
+  margin: 1rem 0 0.5rem;
+}
+
+.feature-card p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.feature-icon {
+  display: grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.feature-icon svg {
+  width: 1.3rem;
+  height: 1.3rem;
+}
+
+.landing-steps {
+  padding-block: 4.5rem 1rem;
+}
+
+.landing-steps h2 {
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.landing-steps ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 2rem;
+}
+
+.landing-steps li {
+  display: flex;
+  gap: 1rem;
+}
+
+.landing-steps p {
+  margin: 0.35rem 0 0;
+  line-height: 1.55;
+}
+
+.step-number {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+.landing-cta {
+  margin-block: 4rem 2rem;
+  padding: 3rem 1.5rem;
+  text-align: center;
+  background: var(--accent-soft);
+  border-radius: 18px;
+}
+
+.landing-cta h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+  margin-bottom: 0.5rem;
+}
+
+.landing-cta p {
+  margin: 0 0 1.5rem;
+}
+
+.landing-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-block: 1.5rem 2.5rem;
+  border-top: 1px solid var(--border);
+}
+
+@media (max-width: 860px) {
+  .landing-hero {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+    padding-block: 2.5rem 2rem;
+  }
+
+  .preview-reminder {
+    left: 1rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .landing-actions > * {
+    flex: 1 1 100%;
+  }
+
+  .guest-links {
+    order: 2;
+  }
+
+  .guest-links a:not(.button) {
+    padding: 0.4rem 0.4rem;
+  }
+}

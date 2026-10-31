@@ -28,7 +28,18 @@ if (env.trustProxy > 0) app.set('trust proxy', env.trustProxy);
 // CSV), and HSTS in production
 app.use(helmet({ strictTransportSecurity: env.isProduction }));
 // One structured log line per request (method, url, status, duration); sets req.log
-app.use(pinoHttp({ logger }));
+app.use(
+  pinoHttp({
+    logger,
+    serializers: {
+      // Google's callback URL carries an authorization code; keep it out of the logs
+      req: (req: { url?: string; query?: unknown }) =>
+        req.url?.startsWith('/api/auth/google/callback')
+          ? { ...req, url: '/api/auth/google/callback', query: '[redacted]' }
+          : req,
+    },
+  }),
+);
 // Request bodies are small JSON objects; anything bigger is refused early
 app.use(express.json({ limit: '20kb' }));
 app.use(cookieParser());

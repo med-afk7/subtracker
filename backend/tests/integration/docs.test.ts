@@ -11,7 +11,7 @@ describe('API documentation', () => {
     const operations = Object.entries(doc.paths).flatMap(([path, methods]) =>
       Object.keys(methods as object).map((method) => `${method.toUpperCase()} ${path}`),
     );
-    expect(operations).toHaveLength(33);
+    expect(operations).toHaveLength(36);
     expect(operations).toEqual(
       expect.arrayContaining([
         'POST /api/auth/login',

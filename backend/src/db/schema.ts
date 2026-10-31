@@ -8,6 +8,7 @@ import {
   index,
   pgEnum,
   pgTable,
+  primaryKey,
   smallint,
   smallserial,
   text,
@@ -32,7 +33,8 @@ export const users = pgTable(
     id: uuid('id').primaryKey().defaultRandom(),
     // Normalized (trimmed, lowercased) by the app; the check makes that an invariant
     email: text('email').notNull().unique(),
-    passwordHash: text('password_hash').notNull(),
+    // Null for accounts that only sign in with Google (they can add a password by resetting it)
+    passwordHash: text('password_hash'),
     // IANA timezone name, validated by the app; decides what "today" means for this user
     timezone: text('timezone').notNull().default('UTC'),
     emailVerifiedAt: timestamp('email_verified_at', { withTimezone: true }),
@@ -89,6 +91,27 @@ export const emailTokens = pgTable(
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index('email_tokens_user_purpose_idx').on(table.userId, table.purpose)],
+);
+
+// Sign-in through an outside provider. The provider's stable user id (`subject`), not the email,
+// identifies the person: an email address can change hands, the subject never does.
+export const authProviderEnum = pgEnum('auth_provider', ['google']);
+
+export const authIdentities = pgTable(
+  'auth_identities',
+  {
+    provider: authProviderEnum('provider').notNull(),
+    subject: text('subject').notNull(),
+    userId: uuid('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    primaryKey({ columns: [table.provider, table.subject] }),
+    // One identity per provider per user
+    uniqueIndex('auth_identities_user_provider_idx').on(table.userId, table.provider),
+  ],
 );
 
 // Reference data: a fixed list seeded by a migration (custom categories may come later)
@@ -268,6 +291,7 @@ export const notificationDeliveries = pgTable(
 
 export type NotificationDeliveryRow = typeof notificationDeliveries.$inferSelect;
 
+export type AuthProvider = (typeof authProviderEnum.enumValues)[number];
 export type UserRow = typeof users.$inferSelect;
 export type SubscriptionRow = typeof subscriptions.$inferSelect;
 export type CategoryRow = typeof categories.$inferSelect;

@@ -24,10 +24,17 @@ export default function Navbar() {
         )}
       </div>
 
-      {user && (
+      {user ? (
         <button className="button secondary" onClick={logout}>
           Log out
         </button>
+      ) : (
+        <nav className="guest-links">
+          <NavLink to="/login">Log in</NavLink>
+          <Link className="button" to="/signup">
+            Sign up
+          </Link>
+        </nav>
       )}
     </header>
   );

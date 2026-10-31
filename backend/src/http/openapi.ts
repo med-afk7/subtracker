@@ -3,6 +3,7 @@ import {
   changePasswordSchema,
   deleteAccountSchema,
   emailOnlySchema,
+  googleStartSchema,
   loginSchema,
   registerSchema,
   resetPasswordSchema,
@@ -163,7 +164,39 @@ const ENDPOINTS: Endpoint[] = [
     tag: 'Auth',
     summary: 'The current user',
     auth: 'session',
-    success: { status: 200, description: '`{ id, email, timezone, createdAt }`' },
+    success: { status: 200, description: '`{ id, email, timezone, hasPassword, createdAt }`' },
+  },
+  {
+    method: 'get',
+    path: '/api/auth/providers',
+    tag: 'Auth',
+    summary: 'Which outside sign-in providers are configured',
+    auth: 'none',
+    success: { status: 200, description: '`{ google: boolean }`' },
+    errors: [],
+  },
+  {
+    method: 'get',
+    path: '/api/auth/google/start',
+    tag: 'Auth',
+    summary: 'Start "Continue with Google" (browser navigation, not fetch)',
+    description:
+      'Sets a short-lived cookie holding the state, nonce and PKCE verifier, then redirects to Google. `timezone` is used if an account gets created. 404 when Google sign-in is not configured.',
+    auth: 'none',
+    query: googleStartSchema,
+    success: { status: 303, description: "Redirect to Google's consent screen" },
+    errors: [404, 429],
+  },
+  {
+    method: 'get',
+    path: '/api/auth/google/callback',
+    tag: 'Auth',
+    summary: 'Where Google sends the browser back',
+    description:
+      'Checks the state against the cookie, exchanges the code (with the PKCE verifier) for an ID token server-to-server, validates its claims, then logs in, links the account by verified email, or creates one. Redirects to the app, or to `/login?google=failed|cancelled`.',
+    auth: 'none',
+    success: { status: 303, description: 'Redirect to the app (sets the `sid` cookie on success)' },
+    errors: [404, 429],
   },
 
   {
@@ -181,6 +214,8 @@ const ENDPOINTS: Endpoint[] = [
     path: '/api/account',
     tag: 'Account',
     summary: 'Delete the account and all its data',
+    description:
+      'Confirm with `password`, or with `confirmEmail` (the account email) for accounts that only sign in with Google.',
     auth: 'session',
     body: deleteAccountSchema,
     success: { status: 204, description: 'Deleted' },
@@ -447,7 +482,7 @@ function operation(endpoint: Endpoint) {
     responses: {
       [endpoint.success.status]: {
         description: endpoint.success.description,
-        ...(endpoint.success.status === 204
+        ...(endpoint.success.status === 204 || endpoint.success.status === 303
           ? {}
           : endpoint.success.csv
             ? { content: { 'text/csv': { schema: { type: 'string' } } } }

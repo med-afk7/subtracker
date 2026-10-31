@@ -1,10 +1,10 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import GuestRoute from './components/GuestRoute';
+import HomeRoute from './components/HomeRoute';
 import Navbar from './components/Navbar';
 import ProtectedRoute from './components/ProtectedRoute';
 import AccountPage from './pages/AccountPage';
 import CalendarPage from './pages/CalendarPage';
-import DashboardPage from './pages/DashboardPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LoginPage from './pages/LoginPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
@@ -29,8 +29,9 @@ export default function App() {
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
 
+        <Route path="/" element={<HomeRoute />} />
+
         <Route element={<ProtectedRoute />}>
-          <Route path="/" element={<DashboardPage />} />
           <Route path="/subscriptions" element={<SubscriptionsPage />} />
           <Route path="/subscriptions/:id" element={<SubscriptionDetailsPage />} />
           <Route path="/calendar" element={<CalendarPage />} />

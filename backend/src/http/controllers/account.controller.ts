@@ -12,9 +12,9 @@ export const updateAccount: RequestHandler = async (req, res) => {
 };
 
 export const deleteAccount: RequestHandler = async (req, res) => {
-  const { password } = deleteAccountSchema.parse(req.body);
+  const confirmation = deleteAccountSchema.parse(req.body);
   const userId = currentUserId(req);
-  await authService.deleteAccount(userId, password);
+  await authService.deleteAccount(userId, confirmation);
   req.log.info({ userId }, 'Account deleted');
   clearSessionCookie(res);
   res.status(204).end();

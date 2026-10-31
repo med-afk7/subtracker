@@ -352,6 +352,14 @@ Payments per year, as an exact fraction: week → 52/count, month → 12/count, 
 - verify-email / reset-password: 10 per 15 minutes.
 - The response is 429 with `Retry-After`.
 
+### 5.5b Sign-in with Google
+
+- Server-side OpenID Connect authorization code flow. `GET /api/auth/google/start` stores `state`, `nonce` and a PKCE verifier in an httpOnly cookie scoped to `/api/auth/google` (10 minutes, `SameSite=Lax` so it survives the top-level redirect back) and redirects to Google with the S256 challenge.
+- `GET /api/auth/google/callback` clears that cookie first (single use), compares `state` in constant time, exchanges the code with the verifier server-to-server, then checks the ID token's `iss`, `aud`, `exp`, `nonce` and `email_verified`. The signature isn't verified: the token arrived directly from Google's token endpoint over TLS, which OIDC Core §3.1.3.7 accepts.
+- Accounts are keyed by Google's `sub` in `auth_identities (provider, subject)`, never by email alone. First sign-in links to an existing account with the same verified email; if that account was never verified, its password and sessions are dropped (pre-account-takeover defence).
+- Google-only accounts have `password_hash = NULL`. Password login answers the generic 401 (same timing). They add a password through the reset email, and confirm account deletion by typing their email.
+- The redirect URI is `APP_URL/api/auth/google/callback`, through the Vercel rewrite, so the session cookie stays first-party. The callback URL's query (the code) is stripped from request logs.
+
 ### 5.6 Logging hygiene
 
 - pino redacts `req.headers.cookie`, `authorization`, `*.password`, `*.token` and `*.newPassword`.
@@ -612,3 +620,4 @@ runtime migrator (`node dist/db/migrate.js`) before the API starts, so the serve
 | D4  | Email sending                  | Console fallback until a domain is verified in Resend                                                                                                                                                                            |
 | D5  | Phone/SMS reminders            | **Removed** in Phase 3 with the new subscription model                                                                                                                                                                           |
 | D6  | Email-address changes          | **Deferred** past v1                                                                                                                                                                                                             |
+| D7  | Google sign-in                 | **Added** after Phase 9: server-side OIDC code flow with PKCE (§5.5b), optional via `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`                                                                                                    |
