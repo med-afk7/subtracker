@@ -22,6 +22,7 @@ export interface CurrencyTotalDto {
 export interface UpcomingPaymentDto {
   subscriptionId: string;
   name: string;
+  service: string | null;
   date: PlainDate;
   amount: string;
   currency: string;
@@ -157,6 +158,7 @@ export async function getSummary(ctx: RequestContext) {
       ).map((date) => ({
         subscriptionId: sub.id,
         name: sub.name,
+        service: sub.service,
         date,
         amount: formatAmount(sub.amountMinor, sub.currency),
         currency: sub.currency,

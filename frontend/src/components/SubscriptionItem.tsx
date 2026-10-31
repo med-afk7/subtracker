@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import ServiceIcon from './ServiceIcon';
 import type { Subscription } from '../types';
 import {
   describeDaysUntil,
@@ -37,9 +38,7 @@ export default function SubscriptionItem({
 
   return (
     <li className={`subscription-item ${s.state}`}>
-      <span className="avatar" aria-hidden="true">
-        {s.name.charAt(0).toUpperCase()}
-      </span>
+      <ServiceIcon service={s.service} name={s.name} />
 
       <div className="item-main">
         <Link className="item-name" to={`/subscriptions/${s.id}`}>

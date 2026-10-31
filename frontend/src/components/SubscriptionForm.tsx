@@ -1,5 +1,6 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { errorMessage } from '../api/client';
+import type { ServicePreset } from '../data/services';
 import { useCategories } from '../hooks/useCategories';
 import type {
   BillingInterval,
@@ -8,6 +9,7 @@ import type {
   SubscriptionInput,
   SubscriptionPatch,
 } from '../types';
+import ServiceIcon from './ServiceIcon';
 import { CURRENCIES, FREQUENCY_PRESETS, describeFrequency, todayIso } from '../utils/format';
 
 // Number and date inputs stay strings while the user types
@@ -74,6 +76,10 @@ const toFormState = (s: Subscription): FormState => ({
 interface SubscriptionFormProps {
   // Editing an existing subscription; omitted when adding
   initial?: Subscription;
+  // Adding: the service picked in the picker (or null for custom), and the name typed there
+  preset?: ServicePreset | null;
+  customName?: string;
+  onChangeService?: () => void;
   submitLabel: string;
   onSubmit: (data: SubscriptionInput | SubscriptionPatch) => Promise<void>;
   onCancel?: () => void;
@@ -81,12 +87,26 @@ interface SubscriptionFormProps {
 
 export default function SubscriptionForm({
   initial,
+  preset,
+  customName,
+  onChangeService,
   submitLabel,
   onSubmit,
   onCancel,
 }: SubscriptionFormProps) {
   const categories = useCategories();
-  const [form, setForm] = useState<FormState>(initial ? toFormState(initial) : EMPTY_FORM);
+  const [form, setForm] = useState<FormState>(() => {
+    if (initial) return toFormState(initial);
+    if (preset) {
+      return {
+        ...EMPTY_FORM,
+        name: preset.name,
+        category: preset.category,
+        providerWebsite: preset.website,
+      };
+    }
+    return { ...EMPTY_FORM, name: customName ?? '' };
+  });
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -135,6 +155,7 @@ export default function SubscriptionForm({
     if (!isEditing) {
       return {
         ...base,
+        service: preset?.slug ?? null,
         ...(form.nextBillingDate ? { nextBillingDate: form.nextBillingDate } : {}),
       };
     }
@@ -164,6 +185,15 @@ export default function SubscriptionForm({
 
   return (
     <form className="subscription-form" onSubmit={handleSubmit}>
+      {!isEditing && onChangeService && (
+        <div className="picked-service">
+          <ServiceIcon service={preset?.slug ?? null} name={form.name || '+'} />
+          <span>{preset ? preset.name : 'Custom subscription'}</span>
+          <button className="link-button" type="button" onClick={onChangeService}>
+            Change
+          </button>
+        </div>
+      )}
       <div className="form-row">
         <label>
           Name

@@ -15,8 +15,11 @@ validation, pino logging; React + Vite frontend; Vitest + Supertest; GitHub Acti
 
 - **Accounts:** email + password with email verification, password reset, server-side sessions,
   rate limiting, timezone, account deletion.
-- **Subscriptions:** any currency, weekly to multi-year billing, cancel/archive lifecycle, price
-  history kept when prices change, search/filter/sort/pagination, CSV export.
+- **Subscriptions:** pick from about 70 popular services (Netflix, Spotify, iCloud+...) with
+  their logos, or add your own; any currency, weekly to multi-year billing, cancel/archive
+  lifecycle, price history kept when prices change, search/filter/sort/pagination, CSV export.
+  Presets fill in the name, category and website but never the price, which varies by country
+  and plan.
 - **Dashboard:** monthly-equivalent and yearly cost per currency, spending by category, upcoming
   charges, recent price changes, monthly cost over time, and a 30-day/90-day/12-month forecast.
 - **Calendar:** every expected charge on a month grid, past ones at the price that applied then.
@@ -191,3 +194,8 @@ combined. Annualized figures are estimates from current prices.
 
 Responses to register, resend-verification and forgot-password are identical whether or not the
 email has an account. Sensitive auth routes are rate-limited (429 `RATE_LIMITED`).
+
+---
+
+Service logos are from [Simple Icons](https://simpleicons.org) (CC0). Trademarks belong to their
+owners; services without an open-licensed icon show a letter instead.

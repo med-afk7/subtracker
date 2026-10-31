@@ -24,6 +24,7 @@ export type ReminderMode = 'default' | 'custom' | 'off';
 export interface Subscription {
   id: string;
   name: string;
+  service: string | null;
   category: Category;
   notes: string | null;
   amount: string; // decimal string in the currency's units, e.g. "15.99"
@@ -48,6 +49,7 @@ export interface Subscription {
 // Body for POST /subscriptions; PATCH takes any subset plus priceEffectiveDate
 export interface SubscriptionInput {
   name: string;
+  service?: string | null;
   category: string;
   amount: string;
   currency: string;
@@ -92,6 +94,7 @@ export interface CurrencyTotal {
 export interface UpcomingPayment {
   subscriptionId: string;
   name: string;
+  service: string | null;
   date: string;
   amount: string;
   currency: string;
@@ -133,6 +136,7 @@ export interface CalendarEvent {
   date: string;
   subscriptionId: string;
   name: string;
+  service: string | null;
   category: Category;
   amount: string;
   currency: string;

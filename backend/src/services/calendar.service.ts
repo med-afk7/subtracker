@@ -12,6 +12,7 @@ export interface CalendarEventDto {
   date: PlainDate;
   subscriptionId: string;
   name: string;
+  service: string | null;
   category: { slug: string; name: string };
   amount: string;
   currency: string;
@@ -115,6 +116,7 @@ export async function getCalendar(ctx: RequestContext, query: CalendarQuery) {
       date: e.date,
       subscriptionId: e.sub.id,
       name: e.sub.name,
+      service: e.sub.service,
       category: { slug: e.category.slug, name: e.category.name },
       amount: formatAmount(e.amountMinor, e.currency),
       currency: e.currency,

@@ -1,4 +1,5 @@
 import type { CalendarEvent } from '../../types';
+import ServiceIcon from '../ServiceIcon';
 import { formatMoney } from '../../utils/format';
 import { longDate } from '../../utils/calendar';
 
@@ -20,7 +21,10 @@ export default function DayDetails({
         <ul className="plain-list">
           {events.map((e) => (
             <li key={e.subscriptionId} className="change-row">
-              <span className="payment-name">{e.name}</span>
+              <span className="payment-name with-icon">
+                <ServiceIcon service={e.service} name={e.name} size="sm" />
+                {e.name}
+              </span>
               <span className="muted small">{e.category.name}</span>
               <span className="payment-amount">{formatMoney(e.amount, e.currency)}</span>
             </li>

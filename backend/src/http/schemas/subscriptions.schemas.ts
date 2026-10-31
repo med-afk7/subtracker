@@ -65,6 +65,11 @@ const fields = {
     .min(1, 'Name is required')
     .max(100, 'Name is at most 100 characters')
     .refine(noControlChars(CONTROL_CHARS), { message: CONTROL_CHAR_MESSAGE }),
+  // A preset's slug (e.g. "netflix"); the catalog itself lives in the frontend
+  service: z
+    .string()
+    .regex(/^[a-z0-9][a-z0-9-]{0,39}$/, 'Invalid service')
+    .nullable(),
   category: z.string().trim().min(1).max(50),
   notes: optionalText(1000, 'Notes', true),
   amount: amountSchema,
@@ -131,6 +136,7 @@ export const createSubscriptionSchema = z
   .object({
     ...fields,
     category: fields.category.default('other'),
+    service: fields.service.optional(),
     billingIntervalCount: fields.billingIntervalCount.default(1),
     // The first billing date on or after the start. Defaults to the start date.
     nextBillingDate: fields.nextBillingDate.optional(),

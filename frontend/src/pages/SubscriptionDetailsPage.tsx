@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import ServiceIcon from '../components/ServiceIcon';
 import { Link, useParams } from 'react-router-dom';
 import { errorMessage } from '../api/client';
 import * as api from '../api/subscriptions.api';
@@ -78,13 +79,16 @@ export default function SubscriptionDetailsPage() {
         ← All subscriptions
       </Link>
       <div className="page-header">
-        <div>
-          <h1>{sub.name}</h1>
-          <p className="muted details-price">
-            {formatMoney(sub.amount, sub.currency)}{' '}
-            {perPeriod(sub.billingInterval, sub.billingIntervalCount)}
-            {sub.state !== 'active' && <span className="badge">{STATE_LABEL[sub.state]}</span>}
-          </p>
+        <div className="details-title">
+          <ServiceIcon service={sub.service} name={sub.name} size="lg" />
+          <div>
+            <h1>{sub.name}</h1>
+            <p className="muted details-price">
+              {formatMoney(sub.amount, sub.currency)}{' '}
+              {perPeriod(sub.billingInterval, sub.billingIntervalCount)}
+              {sub.state !== 'active' && <span className="badge">{STATE_LABEL[sub.state]}</span>}
+            </p>
+          </div>
         </div>
         <button className="button secondary" onClick={() => setIsEditing(true)}>
           Edit

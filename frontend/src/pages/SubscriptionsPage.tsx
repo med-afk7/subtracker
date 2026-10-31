@@ -5,7 +5,9 @@ import ActionsMenu from '../components/ActionsMenu';
 import { CancelForm, ReactivateForm } from '../components/LifecycleForms';
 import Modal from '../components/Modal';
 import Pagination from '../components/Pagination';
+import ServicePicker from '../components/ServicePicker';
 import SubscriptionForm from '../components/SubscriptionForm';
+import type { ServicePreset } from '../data/services';
 import SubscriptionList from '../components/SubscriptionList';
 import SubscriptionToolbar from '../components/SubscriptionToolbar';
 import { useSubscriptions } from '../hooks/useSubscriptions';
@@ -18,7 +20,10 @@ import type {
 
 // Which popup is open, and for which subscription
 type Dialog =
-  { kind: 'add' } | { kind: 'edit' | 'cancel' | 'reactivate'; subscription: Subscription } | null;
+  // `picked` is undefined while choosing a service, then the preset (or null for custom)
+  | { kind: 'add'; picked?: ServicePreset | null; customName?: string }
+  | { kind: 'edit' | 'cancel' | 'reactivate'; subscription: Subscription }
+  | null;
 
 const INITIAL_QUERY: SubscriptionQuery = {
   search: '',
@@ -133,8 +138,16 @@ export default function SubscriptionsPage() {
         }
         onClose={close}
       >
-        {dialog?.kind === 'add' && (
+        {dialog?.kind === 'add' && dialog.picked === undefined && (
+          <ServicePicker
+            onPick={(picked, customName) => setDialog({ kind: 'add', picked, customName })}
+          />
+        )}
+        {dialog?.kind === 'add' && dialog.picked !== undefined && (
           <SubscriptionForm
+            preset={dialog.picked}
+            customName={dialog.customName}
+            onChangeService={() => setDialog({ kind: 'add' })}
             submitLabel="Add"
             onSubmit={(data) => run(() => api.createSubscription(data as SubscriptionInput))}
             onCancel={close}

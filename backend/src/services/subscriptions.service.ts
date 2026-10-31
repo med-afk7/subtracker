@@ -36,6 +36,7 @@ export interface RequestContext {
 export interface SubscriptionDto {
   id: string;
   name: string;
+  service: string | null;
   category: { slug: string; name: string };
   notes: string | null;
   amount: string;
@@ -86,6 +87,7 @@ function toDto(row: SubscriptionRow, category: CategoryRow, today: PlainDate): S
   return {
     id: row.id,
     name: row.name,
+    service: row.service,
     category: { slug: category.slug, name: category.name },
     notes: row.notes,
     amount: formatAmount(row.amountMinor, row.currency),
@@ -255,6 +257,7 @@ export async function createSubscription(
     const values = {
       userId: ctx.userId,
       name: input.name,
+      service: input.service ?? null,
       categoryId: category.id,
       notes: input.notes ?? null,
       amountMinor,
@@ -374,6 +377,7 @@ export async function updateSubscription(
 
     const changes = {
       name: patch.name ?? current.name,
+      service: patch.service === undefined ? current.service : patch.service,
       categoryId: category.id,
       notes: patch.notes === undefined ? current.notes : patch.notes,
       amountMinor,

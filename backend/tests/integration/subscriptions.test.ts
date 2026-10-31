@@ -452,3 +452,35 @@ describe('ownership', () => {
     expect(res.body.error.code).toBe('NOT_FOUND');
   });
 });
+
+describe('service presets', () => {
+  it('stores the preset a subscription was created from and returns it everywhere', async () => {
+    const agent = await signedInAgent('ada@example.com');
+    const sub = await createSubscription(agent, { service: 'netflix', startDate: '2099-01-10' });
+    expect(sub.service).toBe('netflix');
+
+    expect((await agent.get(`/api/subscriptions/${sub.id}`)).body.data.service).toBe('netflix');
+    const calendar = await agent.get('/api/calendar?from=2099-01-01&to=2099-01-31').expect(200);
+    expect(calendar.body.data.events[0].service).toBe('netflix');
+
+    // Editing other fields keeps it; null clears it
+    await agent
+      .patch(`/api/subscriptions/${sub.id}`)
+      .send({ name: 'Netflix (family)' })
+      .expect(200);
+    expect((await agent.get(`/api/subscriptions/${sub.id}`)).body.data.service).toBe('netflix');
+    const cleared = await agent
+      .patch(`/api/subscriptions/${sub.id}`)
+      .send({ service: null })
+      .expect(200);
+    expect(cleared.body.data.service).toBeNull();
+  });
+
+  it('defaults to no service and rejects malformed values', async () => {
+    const agent = await signedInAgent('ada@example.com');
+    expect((await createSubscription(agent)).service).toBeNull();
+    for (const service of ['Netflix', '../logo', 'a'.repeat(41), '']) {
+      await agent.post('/api/subscriptions').send(netflix({ service })).expect(400);
+    }
+  });
+});

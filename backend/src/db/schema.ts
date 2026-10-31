@@ -113,6 +113,9 @@ export const subscriptions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
     name: varchar('name', { length: 100 }).notNull(),
+    // Which known service this is (e.g. "netflix"), set when created from a preset; the frontend
+    // shows that service's logo. NULL for custom subscriptions.
+    service: varchar('service', { length: 40 }),
     categoryId: smallint('category_id')
       .notNull()
       .references(() => categories.id, { onDelete: 'restrict' }),
@@ -147,6 +150,7 @@ export const subscriptions = pgTable(
       .on(table.nextBillingDate)
       .where(sql`${table.status} = 'active'`),
     check('subscriptions_name_not_blank', sql`btrim(${table.name}) <> ''`),
+    check('subscriptions_service_format', sql`${table.service} ~ '^[a-z0-9][a-z0-9-]*$'`),
     check('subscriptions_amount_non_negative', sql`${table.amountMinor} >= 0`),
     check('subscriptions_currency_format', sql`${table.currency} ~ '^[A-Z]{3}$'`),
     check(

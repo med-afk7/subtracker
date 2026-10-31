@@ -1,0 +1,2 @@
+ALTER TABLE "subscriptions" ADD COLUMN "service" varchar(40);--> statement-breakpoint
+ALTER TABLE "subscriptions" ADD CONSTRAINT "subscriptions_service_format" CHECK ("subscriptions"."service" ~ '^[a-z0-9][a-z0-9-]*$');

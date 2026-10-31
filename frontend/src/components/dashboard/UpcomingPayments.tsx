@@ -1,4 +1,5 @@
 import type { UpcomingPayment } from '../../types';
+import ServiceIcon from '../ServiceIcon';
 import { describeDaysUntil, formatDate, formatMoney } from '../../utils/format';
 
 export default function UpcomingPayments({
@@ -24,7 +25,10 @@ export default function UpcomingPayments({
                 {formatDate(p.date)}
                 <span className="muted small"> · {describeDaysUntil(p.date)}</span>
               </span>
-              <span className="payment-name">{p.name}</span>
+              <span className="payment-name with-icon">
+                <ServiceIcon service={p.service} name={p.name} size="sm" />
+                {p.name}
+              </span>
               <span className="payment-amount">{formatMoney(p.amount, p.currency)}</span>
             </li>
           ))}
