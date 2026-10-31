@@ -129,11 +129,11 @@ erDiagram
 
 ### sessions (current state)
 
-| Column                               | Notes                                                                                                                        |
-| ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------- |
-| id text PK                           | **SHA-256 of the session token.** The raw token only ever exists in the cookie, so a leaked database can't be used to log in |
-| user_id uuid FK → users CASCADE      |                                                                                                                              |
-| created_at, last_used_at, expires_at | 30-day absolute lifetime; 7-day idle timeout checked against `last_used_at` (updated at most once per hour to save writes)   |
+| Column                          | Notes                                                                                                                        |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| id text PK                      | **SHA-256 of the session token.** The raw token only ever exists in the cookie, so a leaked database can't be used to log in |
+| user_id uuid FK → users CASCADE |                                                                                                                              |
+| created_at, expires_at          | 12-hour absolute lifetime from login (no sliding renewal); the cookie's Max-Age matches                                      |
 
 - **Indexes:** `(user_id)` so "log out everywhere" after a password change is fast; `(expires_at)` for the cleanup job.
 - **Why server-side sessions instead of JWT:** logout and "invalidate after a password change" become a `DELETE`. A JWT stays valid until it expires.

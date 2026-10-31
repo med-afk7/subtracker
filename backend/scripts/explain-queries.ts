@@ -72,7 +72,7 @@ const { rows: subs } = await q(`SELECT id FROM subscriptions WHERE user_id = $1`
 await explain(
   '1. Session lookup (every authenticated request)',
   `SELECT * FROM sessions s JOIN users u ON u.id = s.user_id
-   WHERE s.id = $1 AND s.expires_at > now() AND s.last_used_at > now() - interval '7 days'`,
+   WHERE s.id = $1 AND s.expires_at > now()`,
   [session.id],
 );
 await explain(

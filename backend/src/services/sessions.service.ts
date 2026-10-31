@@ -4,11 +4,6 @@ import { db, type Database } from '../db/index.js';
 import { sessions, users, type UserRow } from '../db/schema.js';
 import { generateToken, hashToken } from '../lib/crypto.js';
 
-// A session also ends after a week without use
-const IDLE_TIMEOUT = sql`interval '7 days'`;
-// Refresh last_used_at at most hourly so every request doesn't cost a database write
-const TOUCH_AFTER_MS = 60 * 60 * 1000;
-
 type Executor = Database | Parameters<Parameters<Database['transaction']>[0]>[0];
 
 // Returns the raw token for the cookie; only its hash is stored
@@ -33,18 +28,8 @@ export async function findSession(token: string): Promise<AuthenticatedSession |
     .select({ session: sessions, user: users })
     .from(sessions)
     .innerJoin(users, eq(users.id, sessions.userId))
-    .where(
-      and(
-        eq(sessions.id, sessionId),
-        gt(sessions.expiresAt, sql`now()`),
-        gt(sessions.lastUsedAt, sql`now() - ${IDLE_TIMEOUT}`),
-      ),
-    );
+    .where(and(eq(sessions.id, sessionId), gt(sessions.expiresAt, sql`now()`)));
   if (!row) return null;
-
-  if (Date.now() - row.session.lastUsedAt.getTime() > TOUCH_AFTER_MS) {
-    await db.update(sessions).set({ lastUsedAt: new Date() }).where(eq(sessions.id, sessionId));
-  }
 
   return { sessionId, user: row.user };
 }

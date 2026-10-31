@@ -140,6 +140,8 @@ describe('login', () => {
     const header = ([] as string[]).concat(res.headers['set-cookie'] ?? []).join(';');
     expect(header).toMatch(/HttpOnly/);
     expect(header).toMatch(/SameSite=Lax/);
+    // Sessions last 12 hours, in the browser and on the server
+    expect(header).toMatch(/Max-Age=43200/);
     // Only the boolean `hasPassword`, never the hash itself
     expect(res.body.data.hasPassword).toBe(true);
     expect(JSON.stringify(res.body)).not.toMatch(/hash|argon|"password/i);
@@ -147,6 +149,9 @@ describe('login', () => {
     const token = sessionCookieFrom(res).slice('sid='.length);
     const stored = await db.query.sessions.findFirst({ where: eq(sessions.id, hashToken(token)) });
     expect(stored).toBeDefined();
+    const hoursLeft = (stored!.expiresAt.getTime() - Date.now()) / 3_600_000;
+    expect(hoursLeft).toBeGreaterThan(11.9);
+    expect(hoursLeft).toBeLessThanOrEqual(12);
   });
 });
 
@@ -172,7 +177,7 @@ describe('sessions', () => {
     await request(app).get('/api/auth/me').set('Cookie', cookie).expect(401);
   });
 
-  it('rejects missing, forged, expired and idle sessions', async () => {
+  it('rejects missing, forged and expired sessions', async () => {
     await request(app).get('/api/auth/me').expect(401);
     await request(app).get('/api/auth/me').set('Cookie', 'sid=forged').expect(401);
 
@@ -182,13 +187,7 @@ describe('sessions', () => {
 
     await db
       .update(sessions)
-      .set({ lastUsedAt: sql`now() - interval '8 days'` })
-      .where(eq(sessions.id, sessionId));
-    await request(app).get('/api/auth/me').set('Cookie', cookie).expect(401);
-
-    await db
-      .update(sessions)
-      .set({ lastUsedAt: sql`now()`, expiresAt: sql`now() - interval '1 second'` })
+      .set({ expiresAt: sql`now() - interval '1 second'` })
       .where(eq(sessions.id, sessionId));
     await request(app).get('/api/auth/me').set('Cookie', cookie).expect(401);
   });

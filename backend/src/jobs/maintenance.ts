@@ -1,4 +1,4 @@
-import { and, isNotNull, lt, or, sql } from 'drizzle-orm';
+import { and, isNotNull, lt, or } from 'drizzle-orm';
 import { db } from '../db/index.js';
 import { emailTokens, sessions } from '../db/schema.js';
 import { refreshStaleNextBillingDates } from '../services/subscriptions.service.js';
@@ -10,12 +10,7 @@ export async function runMaintenance(now: Date) {
 
   const expiredSessions = await db
     .delete(sessions)
-    .where(
-      or(
-        lt(sessions.expiresAt, now),
-        lt(sessions.lastUsedAt, sql`${now.toISOString()}::timestamptz - interval '7 days'`),
-      ),
-    )
+    .where(lt(sessions.expiresAt, now))
     .returning({ id: sessions.id });
 
   // Used or expired verification/reset tokens are useless after a day
