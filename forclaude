@@ -1,0 +1,1433 @@
+# Project: Build a Production-Ready, Resume-Worthy Subscription Tracker
+
+Act as a senior software engineer, backend architect, and technical mentor. Help me design and build a subscription tracker that is useful to real users and demonstrates strong software engineering skills, particularly in backend development, database design, API architecture, security, background processing, testing, and system design.
+
+I want to build a complete, deployable application, not just a prototype.
+
+Your job is to help me implement this project in a structured way while ensuring I understand the engineering decisions behind it.
+
+Do not immediately generate the entire application. First, establish the architecture, requirements, database schema, API contracts, and development plan. Then help me implement the application incrementally, explaining important decisions and reviewing the implementation as we go.
+
+I want to understand what I am building rather than blindly copying AI-generated code.
+
+---
+
+# 1. Product Vision
+
+Build a subscription tracker that helps users manage recurring expenses, understand their subscription spending, anticipate upcoming payments, and avoid forgetting about subscriptions they no longer need.
+
+The application should let users manually add subscriptions, track their billing schedules, calculate their recurring expenses, receive reminders before expected charges, and review historical price changes.
+
+The product should prioritize simplicity, accuracy, reliability, and privacy.
+
+The primary objective is to build a genuinely useful application while demonstrating the skills expected of a backend software engineer.
+
+The application should initially be a responsive web application. Do not build a mobile application or introduce unnecessary infrastructure.
+
+## Core product principles
+
+1. Financial calculations must be accurate.
+2. Users must only be able to access their own data.
+3. Recurring billing dates must be calculated correctly.
+4. Background jobs must handle failures and duplicate execution safely.
+5. Historical information must not disappear when current subscription data changes.
+6. The application must have automated tests for important business logic.
+7. The architecture should remain understandable and maintainable.
+8. Every feature should solve a real user problem or demonstrate a meaningful engineering concept.
+9. Avoid unnecessary abstractions and overengineering.
+10. Keep the initial scope manageable enough for one developer to complete.
+
+# 2. Technology Stack
+
+Use the following stack unless you identify a compelling technical reason to recommend a change.
+
+## Frontend
+- React
+- TypeScript
+- A modern frontend build tool such as Vite
+- A maintainable component architecture
+- Responsive layouts
+- A charting library only where visualizations genuinely help
+
+## Backend
+- Node.js
+- TypeScript
+- Express
+- REST API architecture
+- A clear separation between routes, controllers, business logic, database access, and background processing
+
+## Database
+- PostgreSQL
+- Drizzle ORM, preferably, unless Prisma provides a meaningful advantage
+- Version-controlled database migrations
+- Foreign-key constraints
+- Appropriate unique constraints and indexes
+
+## Authentication
+- Secure email and password authentication
+- Email verification
+- Password-reset functionality
+- Secure HTTP-only cookies and server-managed sessions, where appropriate
+- Proper session invalidation
+- Rate limiting on sensitive endpoints
+
+Prefer secure, manageable authentication over unnecessarily complicated authentication infrastructure.
+
+## Email
+- Resend or a comparable transactional email provider
+- Email verification messages
+- Password-reset emails
+- Upcoming billing reminders
+
+## Background processing
+- A PostgreSQL-backed job queue or a carefully designed scheduled worker
+- Reliable job execution
+- Retry handling
+- Duplicate-job prevention
+- Notification delivery tracking
+
+Do not introduce Redis or another external queue unless the chosen implementation genuinely requires it.
+
+## Testing
+- Vitest
+- Supertest for HTTP integration testing
+- Database integration tests
+- Tests for date calculations, financial calculations, authorization, and background processing
+
+## Deployment
+- Vercel or a comparable platform for the frontend
+- A suitable backend hosting provider
+- Managed PostgreSQL
+- GitHub Actions for automated testing and CI/CD
+
+Choose the simplest deployment architecture that supports the application's requirements.
+
+---
+
+# 3. Authentication and Account Management
+
+Implement a complete account system.
+
+## Required functionality
+
+Users must be able to:
+
+- Register with an email address and password.
+- Verify their email address.
+- Log in and log out.
+- Request a password-reset link.
+- Reset their password using a time-limited token.
+- Change their password.
+- Update their account information.
+- Configure their preferred timezone.
+- Delete their account and associated personal data.
+
+## Security requirements
+
+- Hash passwords using Argon2id or bcrypt with appropriate parameters.
+- Never store plaintext passwords.
+- Use cryptographically secure tokens for verification and password reset.
+- Store verification and reset tokens securely, preferably as hashes.
+- Make tokens single-use and expire them.
+- Use HTTP-only cookies for session credentials.
+- Configure Secure and SameSite cookie attributes appropriately for the deployment environment.
+- Implement CSRF protection where required by the chosen cookie-based authentication architecture.
+- Rate-limit login, registration, verification, and password-reset endpoints.
+- Avoid revealing whether an email address exists through sensitive authentication responses.
+- Validate all inputs on the server.
+- Do not expose passwords, session identifiers, or secrets in logs.
+- Invalidate relevant sessions after password changes or account deletion.
+
+## Authorization
+
+Every operation involving a user's data must enforce authorization on the backend.
+
+For example, requesting:
+
+GET /api/subscriptions/123
+
+must not return a subscription belonging to another user.
+
+Never rely on the frontend to enforce access control.
+
+Design database queries and authorization checks so that changing an ID in an API request cannot expose another user's information.
+
+Include automated tests for these cases.
+
+---
+
+# 4. Subscription Management
+
+This is the central feature of the application.
+
+Users must be able to create, view, update, archive, cancel, and delete subscription records.
+
+## Subscription fields
+
+A subscription should support:
+
+- Unique ID
+- Owner's user ID
+- Subscription name
+- Category
+- Description or notes
+- Current price
+- Currency
+- Billing frequency
+- Billing interval where applicable
+- Start date
+- Next billing date
+- Optional end date
+- Subscription status
+- Optional payment-method label
+- Optional provider website
+- Optional cancellation URL
+- Creation timestamp
+- Last-update timestamp
+
+Payment information must be optional.
+
+Never request or store full credit-card numbers, CVVs, or other unnecessary sensitive payment information.
+
+## Billing frequencies
+
+Support at least:
+
+- Weekly
+- Monthly
+- Quarterly
+- Annually
+
+Use a consistent representation for recurring intervals.
+
+Design the system so additional intervals can be introduced without rewriting the entire billing engine.
+
+## Subscription lifecycle
+
+Support distinct states such as:
+
+- Active
+- Cancelled
+- Archived
+
+Define the meaning of each state clearly.
+
+Archiving should allow users to hide an old subscription while preserving its history.
+
+Cancellation in the application must not imply that the provider has actually cancelled the user's subscription.
+
+Unless a genuine authorized provider integration exists, cancellation should only record the user's cancellation information.
+
+## Validation
+
+Reject invalid input, including:
+
+- Missing subscription names
+- Invalid dates
+- Invalid currency codes
+- Unsupported billing intervals
+- Invalid monetary amounts
+- Incorrect ownership
+- Inconsistent lifecycle dates
+
+Use server-side validation and appropriate database constraints.
+
+## Editing subscriptions
+
+When users change a subscription's price, frequency, or next billing date, ensure the application's billing calculations and future reminders remain consistent.
+
+If a user changes a subscription from monthly to annually, do not silently calculate an incorrect renewal date.
+
+Define how existing scheduled reminders are updated or invalidated.
+
+---
+
+# 5. Dashboard and Financial Calculations
+
+Build a dashboard that helps users understand their recurring expenses immediately.
+
+## Dashboard information
+
+Display:
+
+- Number of active subscriptions
+- Total monthly-equivalent recurring expenses
+- Annualized recurring expenses
+- Upcoming payments
+- Spending by category
+- Recent price changes
+- Historical spending trends, when sufficient historical data exists
+
+## Monthly-equivalent calculation
+
+Normalize subscription costs to a monthly equivalent.
+
+Examples:
+
+Monthly subscription:
+Monthly equivalent = monthly price
+
+Annual subscription:
+Monthly equivalent = annual price / 12
+
+Quarterly subscription:
+Monthly equivalent = quarterly price / 3
+
+Weekly subscription:
+Monthly equivalent = weekly price × 52 / 12
+
+Use consistent financial precision.
+
+Prefer integer minor units or an appropriate decimal representation for money. Avoid JavaScript floating-point arithmetic for authoritative financial calculations.
+
+Round amounts for presentation according to the selected currency's conventions.
+
+Document the treatment of rounding and currency precision.
+
+## Annualized cost
+
+Calculate the annualized recurring cost from the current subscription prices and billing frequencies.
+
+Make it clear that annualized cost is an estimate based on current subscriptions, not necessarily the exact amount that will be charged during the next calendar year.
+
+## Upcoming payments
+
+Show the next expected payments, including:
+
+- Subscription name
+- Expected amount
+- Currency
+- Billing date
+- Status
+
+Sort payments chronologically.
+
+## Category breakdown
+
+Display recurring costs by category.
+
+Examples include:
+
+- Entertainment
+- Productivity
+- Health and fitness
+- Cloud services
+- Education
+- Utilities
+- Other
+
+Allow users to choose categories for their subscriptions.
+
+## Historical trends
+
+Do not pretend to know historical spending if the application has not recorded the necessary information.
+
+Clearly distinguish:
+
+1. Current monthly-equivalent recurring costs.
+2. Projected future payments.
+3. Historical prices.
+4. Actual payments, if actual payments are ever tracked through a reliable source.
+
+Do not describe an expected charge as a confirmed transaction.
+
+---
+
+# 6. Billing Calendar and Recurrence Engine
+
+Build a billing calendar and a reusable service for calculating future billing occurrences.
+
+This is an important part of the backend architecture.
+
+## Required functionality
+
+Users must be able to:
+
+- View upcoming payments.
+- View payments for a selected date range.
+- Navigate between months.
+- See expected charges on a calendar.
+- Select a date and inspect the payments expected that day.
+- Filter upcoming payments by subscription or category.
+
+## Recurrence engine
+
+Implement billing-date calculations in a dedicated, testable module.
+
+Do not scatter date calculations throughout controllers and frontend components.
+
+The recurrence engine must handle:
+
+- Weekly billing
+- Monthly billing
+- Quarterly billing
+- Annual billing
+- Month-end dates
+- Leap years
+- Billing dates that fall on the 29th, 30th, or 31st
+- Date-range boundaries
+- Cancelled subscriptions
+- Archived subscriptions
+- Subscription changes
+- Relevant timezone boundaries
+
+For example, if a subscription begins on January 31, determine and document how the billing schedule behaves in February and subsequent months.
+
+Avoid calculating monthly renewals by repeatedly adding 30 days.
+
+Use calendar-aware date arithmetic.
+
+Define whether the original day of the month should be preserved when possible and what should happen in months where that day does not exist.
+
+For example, a January 31 renewal could occur on February's final day and return to the 31st in March, rather than permanently shifting the schedule to the 28th.
+
+Choose a consistent rule and test it.
+
+Use a suitable date library if it meaningfully reduces errors, but do not introduce dependencies without understanding what they do.
+
+## Data model decision
+
+Initially, calculate upcoming billing occurrences from subscription records rather than storing every future occurrence as a permanent database record.
+
+Keep the recurrence engine separate from API controllers so it can be reused by the calendar, dashboard, reminders, and forecasting features.
+
+If later features require persistent billing occurrences, introduce them deliberately rather than duplicating data prematurely.
+
+---
+
+# 7. Email Notifications and Scheduled Reminders
+
+Implement a reliable reminder system.
+
+This is one of the most important backend features because it introduces asynchronous processing and operational concerns.
+
+## User functionality
+
+Allow users to configure reminders:
+
+- A selected number of days before billing
+- One day before billing
+- On the billing date
+- Disabled for specific subscriptions
+- Enabled or disabled globally
+
+The system should respect the user's configured timezone.
+
+## Reminder contents
+
+A reminder should include:
+
+- Subscription name
+- Expected amount
+- Expected billing date
+- A link to the subscription's page
+- A cancellation link, if a verified provider URL exists
+
+Do not imply that a charge has actually occurred unless it has been confirmed through a reliable source.
+
+## Processing architecture
+
+Design a background-processing system that:
+
+1. Identifies reminders that are due.
+2. Verifies that the relevant subscription and reminder are still valid.
+3. Claims work safely so concurrent workers do not process the same job incorrectly.
+4. Sends the notification through the email provider.
+5. Records the delivery attempt and outcome.
+6. Retries appropriate transient failures.
+7. Stops retrying after a defined limit.
+8. Makes failed notifications visible for troubleshooting.
+
+Do not send emails directly inside an HTTP request that creates or updates a subscription.
+
+## Idempotency
+
+The same reminder must not be sent multiple times simply because a job runs twice or a worker restarts.
+
+Design an appropriate idempotency strategy.
+
+For example, use a unique key associated with the subscription, billing occurrence, reminder type, and scheduled reminder time.
+
+Use database constraints and transactional operations where appropriate.
+
+Think carefully about the case where an email provider accepts a message but the worker crashes before recording the success.
+
+Explain what guarantees the chosen implementation can realistically provide.
+
+Do not claim perfect exactly-once email delivery when the underlying provider and processing architecture cannot guarantee it.
+
+## Retry handling
+
+Distinguish between:
+
+- Temporary network failures
+- Rate limits
+- Provider outages
+- Invalid recipient addresses
+- Permanent provider errors
+
+Implement bounded retries with an appropriate delay strategy.
+
+Do not retry permanent failures indefinitely.
+
+## Scheduled processing
+
+Choose a practical approach for the first release.
+
+A PostgreSQL-backed queue or a scheduled worker that queries due reminders may be sufficient.
+
+Explain the trade-offs before choosing the implementation.
+
+Ensure the worker can recover after deployment, restart, or temporary database unavailability.
+
+---
+
+# 8. Search, Filtering, Sorting, and Pagination
+
+Make subscription management practical when users have many entries.
+
+## Required functionality
+
+Allow users to:
+
+- Search by subscription name.
+- Filter by category.
+- Filter by status.
+- Filter by billing frequency.
+- Sort by next billing date.
+- Sort by price.
+- Sort alphabetically.
+- Paginate results.
+
+For example:
+
+GET /api/subscriptions?category=productivity&status=active&page=1&limit=20
+
+Implement filtering and pagination on the backend.
+
+Validate query parameters and apply a reasonable maximum page size.
+
+Use indexes where justified by actual query patterns.
+
+Do not fetch every record and rely entirely on frontend filtering.
+
+Use consistent response structures for paginated results.
+
+---
+
+# 9. Historical Price Tracking
+
+Preserve subscription price changes.
+
+When a user changes a subscription's price, the application should record the change rather than simply overwriting the old value and losing the history.
+
+## Price history records
+
+Store:
+
+- Subscription ID
+- Previous price
+- New price
+- Currency, where needed
+- Effective date
+- Record creation timestamp
+- Source of the change, such as a manual update
+
+The application should support a price-history view showing how the subscription's cost has changed.
+
+For example:
+
+January: $9.99/month
+June: $12.99/month
+October: $14.99/month
+
+The application can report that the price increased by $5.00 per month from January to October.
+
+## Data integrity
+
+Consider the distinction between:
+
+- When a price change became effective.
+- When the application learned about the price change.
+
+A user may enter a price increase today but indicate that it became effective last month.
+
+Design the data model to represent that situation clearly.
+
+Decide how to handle currency changes, deleted subscriptions, and historical records.
+
+Use database transactions when updating the current subscription and inserting the corresponding history record.
+
+A failed update should not leave the current price and its history inconsistent.
+
+---
+
+# 10. CSV Export and Privacy
+
+Allow users to export their subscription information.
+
+## Export contents
+
+Include:
+
+- Subscription name
+- Category
+- Current price
+- Currency
+- Billing frequency
+- Next billing date
+- Status
+- Start date
+- Creation timestamp
+
+Optionally support exporting price history.
+
+## Implementation requirements
+
+- Generate valid CSV.
+- Use correct response headers.
+- Handle escaping of commas, quotation marks, and newlines.
+- Consider spreadsheet formula injection when exporting user-controlled text.
+- Verify that the requester is authorized.
+- Export only the requester's data.
+- Avoid unnecessary internal identifiers.
+- Do not include passwords, tokens, or secrets.
+- Avoid publicly accessible temporary files.
+
+For the expected initial dataset, generate or stream the export directly rather than introducing a file-storage service unnecessarily.
+
+Implement account deletion with a clear policy for associated records and relevant foreign-key relationships.
+
+---
+
+# 11. Subscription Cost Forecasting
+
+After the core application is complete, add a forecasting feature.
+
+Allow users to see expected subscription payments over a selected period, such as:
+
+- The next 30 days
+- The next 90 days
+- The next 12 months
+
+## Forecast behavior
+
+Calculate expected billing occurrences within the selected date range.
+
+For each occurrence, determine:
+
+- Subscription
+- Expected payment date
+- Expected amount
+- Currency
+
+Aggregate the results by month and present them visually.
+
+Clearly distinguish the forecast from the monthly-equivalent subscription cost.
+
+For example, a $120 annual subscription has a monthly equivalent of $10, but its expected payment may be $120 in a single month.
+
+Avoid combining different currencies into a single total unless you implement an explicit currency-conversion system with a documented exchange-rate source and conversion date.
+
+Use the recurrence engine instead of implementing another independent date-calculation system.
+
+---
+
+# 12. Subscription Review Suggestions
+
+As a later enhancement, add simple rules that help users identify subscriptions they may want to review.
+
+Potential rules include:
+
+- A subscription has not been reviewed for six months.
+- A subscription's price has increased.
+- An annual renewal is approaching.
+- A subscription exceeds a user-configurable cost threshold.
+
+Allow users to dismiss or acknowledge suggestions.
+
+Do not claim that a user does not use a service unless reliable usage data exists.
+
+Do not automatically cancel subscriptions.
+
+Do not introduce AI or machine learning merely to make the project appear more advanced.
+
+Start with transparent rules that can be tested and explained.
+
+---
+
+# 13. Database Architecture
+
+Design a relational database that supports the requirements without unnecessary complexity.
+
+Consider the following tables.
+
+## users
+
+Suggested fields:
+
+- id
+- email
+- password_hash
+- timezone
+- email_verified_at
+- created_at
+- updated_at
+
+Use appropriate constraints and indexes, including a unique constraint on normalized email addresses.
+
+## subscriptions
+
+Suggested fields:
+
+- id
+- user_id
+- name
+- category_id
+- description
+- current_amount
+- currency
+- billing_interval
+- billing_interval_count, if needed
+- start_date
+- next_billing_date
+- end_date
+- status
+- payment_method_label
+- provider_website
+- cancellation_url
+- created_at
+- updated_at
+
+Use an appropriate monetary representation.
+
+Choose a consistent date/time representation and explain which fields represent calendar dates versus timestamps.
+
+## categories
+
+Suggested fields:
+
+- id
+- user_id, if categories are user-specific
+- name
+- created_at
+
+Decide whether categories are predefined, user-defined, or a combination.
+
+## subscription_price_history
+
+Suggested fields:
+
+- id
+- subscription_id
+- old_amount
+- new_amount
+- currency, if needed
+- effective_at
+- recorded_at
+- change_source
+
+## notification_preferences
+
+Suggested fields:
+
+- id
+- user_id
+- subscription_id, nullable for global preferences
+- reminder_days_before
+- enabled
+- created_at
+- updated_at
+
+Choose a representation that prevents ambiguous global and subscription-specific settings.
+
+## notification_deliveries
+
+Suggested fields:
+
+- id
+- user_id
+- subscription_id
+- billing_occurrence_date
+- scheduled_at
+- sent_at
+- status
+- attempt_count
+- last_error_code
+- created_at
+- updated_at
+
+Add the constraints needed to prevent duplicate logical reminders.
+
+Consider whether a separate notification-job table is appropriate or whether the chosen queue can provide this functionality.
+
+## Additional tables
+
+Introduce session, verification-token, password-reset, or payment-occurrence tables only where justified by the implementation.
+
+Do not create tables simply because they might be useful someday.
+
+For each table, explain:
+
+1. Why it exists.
+2. Its relationships.
+3. Its important constraints.
+4. Its indexes.
+5. How records are updated and deleted.
+6. Whether it stores current state, historical state, or scheduled work.
+
+Use database migrations to evolve the schema safely.
+
+---
+
+# 14. API Design
+
+Use REST conventions and a consistent API response format.
+
+Design the API before implementing the controllers.
+
+At minimum, consider the following endpoints.
+
+## Authentication
+
+POST /api/auth/register
+POST /api/auth/verify-email
+POST /api/auth/login
+POST /api/auth/logout
+POST /api/auth/forgot-password
+POST /api/auth/reset-password
+POST /api/auth/change-password
+GET /api/auth/me
+
+## Subscriptions
+
+POST /api/subscriptions
+GET /api/subscriptions
+GET /api/subscriptions/:id
+PATCH /api/subscriptions/:id
+DELETE /api/subscriptions/:id
+
+Add appropriate endpoints or actions for cancellation and archiving.
+
+## Dashboard
+
+GET /api/dashboard/summary
+GET /api/dashboard/category-breakdown
+GET /api/dashboard/spending-trends
+
+## Calendar
+
+GET /api/calendar
+
+Support validated date-range parameters.
+
+## Price history
+
+GET /api/subscriptions/:id/history
+
+## Notifications
+
+GET /api/notification-preferences
+PATCH /api/notification-preferences
+GET /api/notifications
+
+Design the exact notification endpoints according to the chosen data model.
+
+## Export
+
+GET /api/subscriptions/export
+
+## Account
+
+PATCH /api/account
+DELETE /api/account
+
+You may adjust these endpoints when the architecture requires it.
+
+For every endpoint, document:
+
+- HTTP method
+- Purpose
+- Authentication requirements
+- Request parameters
+- Request body
+- Response structure
+- Validation rules
+- Expected error responses
+- Authorization requirements
+
+Use appropriate HTTP status codes.
+
+Use a consistent error-response structure.
+
+Avoid leaking internal exceptions or database details to clients.
+
+Document the API with OpenAPI or a comparable tool.
+
+---
+
+# 15. Frontend Requirements
+
+Build a clean, professional, responsive interface.
+
+The visual design should support the product rather than distract from its functionality.
+
+## Main pages
+
+### 1. Landing page
+
+Explain what the application does.
+
+Keep the page simple and avoid exaggerated marketing claims.
+
+### 2. Registration and login
+
+Provide accessible forms, useful validation messages, and appropriate loading and error states.
+
+### 3. Dashboard
+
+Display:
+
+- Active subscription count
+- Monthly-equivalent expenses
+- Annualized expenses
+- Upcoming payments
+- Spending by category
+- Relevant price changes
+
+### 4. Subscriptions page
+
+Provide a searchable and filterable list of subscriptions.
+
+Include actions for creating, editing, archiving, and deleting entries.
+
+### 5. Subscription details
+
+Display the current subscription information, upcoming billing date, price history, and available actions.
+
+### 6. Billing calendar
+
+Display upcoming billing events and allow navigation across dates.
+
+### 7. Notification settings
+
+Allow users to configure reminder preferences.
+
+### 8. Account settings
+
+Allow users to update their account information, timezone, and password, and request account deletion.
+
+## UI requirements
+
+- Responsive design
+- Accessible forms and controls
+- Clear typography and visual hierarchy
+- Useful empty states
+- Loading states
+- Error states
+- Confirmation for destructive actions
+- Consistent component styling
+- Keyboard accessibility
+- Clear date and currency formatting
+- No unnecessary animations or visual complexity
+
+Do not spend excessive time polishing the frontend before the core backend functionality works correctly.
+
+---
+
+# 16. Testing Requirements
+
+Automated tests are essential.
+
+Do not treat testing as a final optional step.
+
+## Unit tests
+
+Test the business logic independently of HTTP requests and database access.
+
+Prioritize:
+
+- Monthly-equivalent cost calculations
+- Annualized cost calculations
+- Currency precision
+- Billing-date calculations
+- Month-end behavior
+- Leap-year behavior
+- Forecast calculations
+- Subscription status transitions
+- Reminder scheduling logic
+
+## Integration tests
+
+Test the API against a test database.
+
+Include:
+
+- Creating a subscription
+- Updating a subscription
+- Listing and filtering subscriptions
+- Deleting and archiving subscriptions
+- Retrieving dashboard summaries
+- Retrieving billing-calendar events
+- Recording price changes
+- Exporting CSV
+- Updating notification preferences
+
+## Security tests
+
+Verify that:
+
+- Unauthenticated requests cannot access protected endpoints.
+- Users cannot read another user's subscriptions.
+- Users cannot modify another user's subscriptions.
+- Users cannot delete another user's subscriptions.
+- Invalid session credentials are rejected.
+- Expired verification and reset tokens cannot be reused.
+- Inputs are validated on the server.
+- Sensitive information is not exposed in responses or logs.
+
+## Background-processing tests
+
+Verify that:
+
+- Due reminders are identified correctly.
+- Future reminders are not sent early.
+- Cancelled subscriptions are handled appropriately.
+- Duplicate jobs do not create duplicate logical notifications.
+- Temporary failures can be retried.
+- Permanent failures do not retry indefinitely.
+- Workers recover from interruption.
+- Email-provider errors are handled safely.
+
+Mock external email services in automated tests where appropriate.
+
+Use integration tests for database behavior that cannot be adequately tested through mocks.
+
+---
+
+# 17. Logging, Error Handling, and Observability
+
+Implement basic operational visibility.
+
+The application should produce structured logs for important events, including:
+
+- Authentication failures
+- Subscription creation and updates
+- Background-job execution
+- Reminder delivery attempts
+- External email-provider failures
+- Unexpected server errors
+
+Do not log passwords, authentication tokens, or unnecessary sensitive user data.
+
+Use a consistent error-handling approach.
+
+Distinguish between expected validation errors and unexpected internal failures.
+
+Provide a health-check endpoint suitable for deployment monitoring.
+
+Ensure background-worker failures are observable instead of silently ignored.
+
+You do not need a complex monitoring platform for the first release, but you should be able to diagnose common problems.
+
+---
+
+# 18. Performance and Database Optimization
+
+Keep performance appropriate for the expected scale.
+
+Consider indexes for:
+
+- User-owned subscription queries
+- Subscription status
+- Upcoming billing dates
+- Category filtering
+- Notification scheduling
+- Unique reminder identification
+
+Do not add indexes blindly.
+
+Use query plans and realistic test data to understand performance when necessary.
+
+Avoid unnecessary N+1 queries.
+
+Implement pagination for subscription lists.
+
+Ensure that dashboard calculations are reasonably efficient.
+
+Do not introduce caching until you have a concrete reason to do so.
+
+If you introduce caching later, explain how invalidation will work when subscription records change.
+
+---
+
+# 19. CI/CD and Deployment
+
+Prepare the application for deployment.
+
+## Required deployment practices
+
+- Separate development and production environments.
+- Store secrets in environment variables or the hosting platform's secret manager.
+- Never commit production credentials.
+- Use database migrations.
+- Run automated tests in CI.
+- Include linting and type checking.
+- Build the frontend and backend in CI.
+- Configure production CORS appropriately.
+- Use HTTPS.
+- Configure cookies correctly for the production domain.
+- Configure health checks.
+- Provide a documented deployment process.
+
+If the background worker is a separate process, explain how it will be deployed and monitored.
+
+Make sure the application does not rely on an unreliable in-memory timer running inside a serverless function.
+
+If deployment uses scheduled invocations, account for duplicate invocation and execution limits.
+
+Include a `.env.example` file containing variable names and placeholder values, but never real secrets.
+
+Provide a README with local setup, migration, testing, and deployment instructions.
+
+---
+
+# 20. Explicitly Avoid These Features Initially
+
+Do not implement the following in the initial release:
+
+- Automatic subscription discovery through email inbox access
+- Automatic bank transaction imports
+- Automatic subscription cancellation through provider integrations
+- AI-powered recommendations
+- Machine-learning models
+- Microservices
+- Kubernetes
+- Kafka
+- Unnecessary Redis infrastructure
+- A separate mobile application
+- Complex budgeting functionality
+- An elaborate financial ledger
+- Multi-currency conversion using undocumented exchange rates
+
+These features can be considered later if there is a clear product or engineering justification.
+
+The initial application must be valuable without them.
+
+---
+
+# 21. Development Roadmap
+
+Organize implementation into the following phases.
+
+## Phase 1: Requirements and Architecture
+
+Before writing substantial application code:
+
+1. Review the requirements.
+2. Identify ambiguities and potential technical risks.
+3. Define the architecture.
+4. Design the database schema.
+5. Define API contracts.
+6. Explain authentication and authorization.
+7. Design the billing recurrence engine.
+8. Define the notification-processing approach.
+9. Identify the most important edge cases.
+10. Establish the development sequence.
+
+Produce architecture diagrams where useful.
+
+Do not generate the entire application in one response.
+
+## Phase 2: Project Foundation
+
+Implement:
+
+- Repository structure
+- TypeScript configuration
+- Frontend and backend setup
+- PostgreSQL connection
+- Drizzle configuration
+- Initial migrations
+- Environment configuration
+- Linting and formatting
+- Basic CI workflow
+
+Ensure the application runs locally before proceeding.
+
+## Phase 3: Authentication and Subscription CRUD
+
+Implement:
+
+- Registration
+- Email verification
+- Login and logout
+- Sessions
+- Password reset
+- Authorization middleware
+- Subscription creation
+- Subscription listing
+- Subscription updates
+- Subscription deletion
+- Archiving and cancellation state management
+
+Write tests for the main workflows and ownership restrictions.
+
+## Phase 4: Financial Calculations and Dashboard
+
+Implement:
+
+- Monetary calculation utilities
+- Monthly-equivalent costs
+- Annualized costs
+- Category aggregation
+- Dashboard API
+- Dashboard frontend
+
+Write unit tests for the calculations before integrating them into the UI.
+
+## Phase 5: Billing Calendar
+
+Implement:
+
+- Recurrence engine
+- Billing-date calculations
+- Upcoming-payment API
+- Calendar UI
+- Date-range filtering
+
+Test month-end dates, leap years, and changes to billing intervals.
+
+## Phase 6: Notifications
+
+Implement:
+
+- Notification preferences
+- Reminder scheduling
+- Background worker
+- Email templates
+- Delivery tracking
+- Retry logic
+- Duplicate-prevention strategy
+- Worker logging
+
+Test failure scenarios, not just successful email delivery.
+
+## Phase 7: Historical Data and Additional Features
+
+Implement:
+
+- Price-history records
+- Price-change tracking
+- Price-history API
+- Price-history UI
+- CSV export
+- Subscription search and filtering
+
+## Phase 8: Forecasting
+
+Implement:
+
+- Billing-occurrence generation over a date range
+- Forecast aggregation
+- Forecast API
+- Forecast visualization
+
+Reuse the existing recurrence engine.
+
+## Phase 9: Production Readiness
+
+Complete:
+
+- Automated test coverage for critical functionality
+- Security review
+- Input-validation review
+- Database-index review
+- Error-handling review
+- Structured logging
+- Health checks
+- Deployment configuration
+- CI/CD
+- README
+- API documentation
+- Final end-to-end testing
+
+Deploy the application and verify its important workflows in the production environment.
+
+---
+
+# 22. How I Want You to Work With Me
+
+This section is important.
+
+Do not treat this as a request to generate thousands of lines of code immediately.
+
+Act as a technical mentor while helping me build a real application.
+
+## First response
+
+Your first response should contain:
+
+1. A concise assessment of the project scope.
+2. The recommended architecture.
+3. The proposed database schema and relationships.
+4. The major API endpoints.
+5. The key engineering risks and edge cases.
+6. A prioritized implementation roadmap.
+7. The decisions that need to be made before implementation begins.
+
+Explain the important architectural trade-offs.
+
+Do not implement every feature in your first response.
+
+## During implementation
+
+Work in small, coherent steps.
+
+For each implementation step:
+
+1. Explain what we are building.
+2. Explain why it belongs at this stage.
+3. Identify the relevant files.
+4. Explain the design before writing substantial code.
+5. Implement the smallest complete piece of functionality.
+6. Explain important code and design decisions.
+7. Identify edge cases.
+8. Write or update relevant tests.
+9. Provide commands to run and verify the implementation.
+10. Explain what successful verification looks like.
+11. Wait for my feedback or test results before proceeding when those results affect the next step.
+
+Do not repeatedly ask for permission to make ordinary implementation decisions. Make reasonable decisions, explain them, and continue.
+
+Ask questions only when an unresolved decision materially affects the architecture or requirements.
+
+## Code quality
+
+- Use TypeScript appropriately.
+- Avoid unnecessary `any` types.
+- Keep business logic out of HTTP controllers.
+- Keep database access organized.
+- Avoid giant files containing unrelated functionality.
+- Use clear names.
+- Validate inputs at application boundaries.
+- Handle errors consistently.
+- Avoid duplicated business logic.
+- Add comments where they clarify non-obvious decisions.
+- Avoid comments that simply repeat what the code says.
+- Use transactions when multiple related database operations must succeed or fail together.
+- Use database constraints to enforce important invariants.
+- Do not introduce abstractions without a reason.
+- Do not invent APIs or package capabilities.
+- Do not claim that code has been tested unless it has actually been tested.
+
+## Teaching expectations
+
+I want to become a stronger backend software engineer through this project.
+
+When relevant, explain concepts such as:
+
+- Relational database design
+- Transactions
+- Database indexes
+- REST API design
+- Authentication and authorization
+- Session management
+- Idempotency
+- Background jobs
+- Retry strategies
+- Concurrency
+- Date and time handling
+- Data consistency
+- API error handling
+- Testing strategies
+- Deployment and operational reliability
+
+Keep explanations practical and connect them to the actual code being implemented.
+
+Do not turn every response into a textbook chapter. Explain concepts when they become relevant.
+
+## Working with AI-generated code
+
+Do not encourage me to accept code without understanding it.
+
+Before implementing a complicated feature, outline the algorithm and important decisions.
+
+When there are multiple reasonable approaches, explain the trade-offs and recommend one.
+
+If I propose a poor design, explain the problem and suggest a better alternative.
+
+If I encounter an error, diagnose the cause rather than immediately rewriting unrelated parts of the application.
+
+When I share existing code, inspect it and preserve working functionality unless a change is necessary.
+
+Avoid replacing entire files when a focused change is sufficient.
+
+Never invent test results, performance measurements, deployment outcomes, or security guarantees.
+
+---
+
+# 23. Definition of Done
+
+The project is complete when the following conditions are met.
+
+## Product functionality
+
+- Users can register and authenticate securely.
+- Users can manage their subscriptions.
+- Users can view accurate recurring-expense summaries.
+- Users can inspect upcoming billing dates.
+- Users can configure and receive email reminders.
+- Price changes are recorded.
+- Users can search and filter subscriptions.
+- Users can export their subscription data.
+- Users can view basic billing forecasts.
+- Users can manage and delete their accounts.
+
+## Engineering quality
+
+- The database schema is documented.
+- Database migrations are version-controlled.
+- API contracts are documented.
+- Critical business logic has automated tests.
+- Authorization tests demonstrate proper user isolation.
+- Billing-date calculations handle documented edge cases.
+- Reminder processing prevents duplicate logical notifications.
+- Background jobs handle failures and retries appropriately.
+- Errors are handled consistently.
+- Important events are logged without exposing sensitive information.
+- The application has been deployed.
+- The application has a useful README.
+- The production deployment has been verified.
+
+## Portfolio quality
+
+The repository should clearly communicate:
+
+- What problem the application solves.
+- Why the architecture was chosen.
+- How the database is structured.
+- How recurring billing is calculated.
+- How scheduled notifications work.
+- How failures are handled.
+- How the application is tested.
+- How to run the project locally.
+- How to deploy it.
+
+The project should be something I can confidently explain in a technical interview, including its trade-offs, limitations, and failure modes.
+
+---
+
+# Final Instruction
+
+Start with Phase 1.
+
+Review the entire specification and propose a coherent architecture that meets the requirements without overengineering the application.
+
+Pay particular attention to the database schema, billing recurrence engine, notification-processing architecture, financial precision, and user authorization.
+
+Identify any requirements that conflict or need clarification.
+
+Then provide the initial architecture and implementation roadmap.
+
+Do not generate the entire application at once. Help me build it incrementally, with working code, tests, explanations, and verification at every major stage.

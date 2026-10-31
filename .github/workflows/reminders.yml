@@ -1,0 +1,38 @@
+# Runs the background work (reminders, maintenance) on a schedule by calling the API's tick
+# endpoint. Free alternative to an always-on worker (docs §6, decision D3).
+#
+# Repository secrets needed:
+#   API_URL      e.g. https://subtracker-api.example.com
+#   CRON_SECRET  same value as the API's CRON_SECRET (at least 32 characters)
+#
+# GitHub may start scheduled runs late or skip some under load, and it pauses schedules in
+# repositories with no activity for 60 days. That's acceptable here: every tick catches up on
+# anything still due, and running twice is harmless.
+name: Reminders
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: reminders-tick
+  cancel-in-progress: false
+
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Run a tick
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$API_URL" ] || [ -z "$CRON_SECRET" ]; then
+            echo "API_URL or CRON_SECRET is not set; skipping."
+            exit 0
+          fi
+          curl --fail-with-body --silent --show-error --max-time 120 \
+            -X POST "$API_URL/api/internal/tick" \
+            -H "Authorization: Bearer $CRON_SECRET"

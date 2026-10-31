@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+npm-debug.log*
+
+# Secrets: every .env file except the committed examples
+.env
+.env.*
+!.env.example
+
+# Neon project link (local context)
+.neon
+forclaud

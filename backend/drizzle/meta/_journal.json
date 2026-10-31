@@ -1,0 +1,48 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1793397350281,
+      "tag": "0000_baseline",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793399519335,
+      "tag": "0001_copy_legacy_subscriptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793399527629,
+      "tag": "0002_drop_old_subscriptions",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1793399551096,
+      "tag": "0003_subscriptions_v2",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793399564940,
+      "tag": "0004_seed_categories_and_convert_legacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793406463969,
+      "tag": "0005_notification_deliveries",
+      "breakpoints": true
+    }
+  ]
+}
