@@ -80,7 +80,7 @@ export function addMonthsClamped(date: PlainDate, months: number): PlainDate {
 export const compareDates = (a: PlainDate, b: PlainDate) => (a < b ? -1 : a > b ? 1 : 0);
 export const maxDate = (a: PlainDate, b: PlainDate) => (a >= b ? a : b);
 
-// The calendar date it currently is in an IANA timezone, e.g. still Oct 31 in Vancouver
+// The calendar date it currently is in an IANA timezone, e.g. still Oct 31 in Los Angeles
 // when it's already Nov 1 in UTC
 export function todayIn(timezone: string, now: Date = new Date()): PlainDate {
   const parts = new Intl.DateTimeFormat('en-US', {
@@ -93,7 +93,7 @@ export function todayIn(timezone: string, now: Date = new Date()): PlainDate {
   return formatPlainDate({ year: get('year'), month: get('month'), day: get('day') });
 }
 
-// The UTC offset (in minutes) a timezone has at a given instant, e.g. -420 for Vancouver in summer
+// The UTC offset (in minutes) a timezone has at a given instant, e.g. -420 for Los Angeles in summer
 function offsetMinutes(timezone: string, instant: Date): number {
   const parts = new Intl.DateTimeFormat('en-US', {
     timeZone: timezone,
@@ -118,7 +118,7 @@ function offsetMinutes(timezone: string, instant: Date): number {
 }
 
 // The instant when the wall clock in `timezone` shows `date` at `hour`:00, e.g. 09:00 in
-// Vancouver on 2026-11-03 = 17:00 UTC. The offset is read at the target time itself, so
+// Los Angeles on 2026-11-03 = 17:00 UTC. The offset is read at the target time itself, so
 // daylight-saving changes between now and then are handled. Like Temporal's "compatible" mode,
 // a wall time that occurs twice (clocks fall back) resolves to the earlier instant, and one that
 // doesn't exist (skipped by a spring-forward) moves forward past the gap.

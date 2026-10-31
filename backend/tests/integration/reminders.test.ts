@@ -97,11 +97,11 @@ describe('scheduling and sending', () => {
 
   it('sends at 09:00 in the user’s own timezone', async () => {
     const { agent } = await userWithNetflix();
-    await agent.patch('/api/account').send({ timezone: 'America/Vancouver' }).expect(200);
+    await agent.patch('/api/account').send({ timezone: 'America/Los_Angeles' }).expect(200);
 
-    await tick(at('2099-03-07T16:59:00Z')); // 08:59 in Vancouver
+    await tick(at('2099-03-07T16:59:00Z')); // 08:59 in Los Angeles
     expect(sentReminders()).toHaveLength(0);
-    await tick(at('2099-03-07T17:00:00Z')); // 09:00 in Vancouver
+    await tick(at('2099-03-07T17:00:00Z')); // 09:00 in Los Angeles
     expect(sentReminders()).toHaveLength(1);
   });
 

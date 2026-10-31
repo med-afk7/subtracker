@@ -44,26 +44,30 @@ describe('isPlainDate', () => {
 });
 
 describe('todayIn', () => {
-  // 2026-11-01 05:30 UTC: already Nov 1 in London and Tokyo, still Oct 31 in Vancouver
+  // 2026-11-01 05:30 UTC: already Nov 1 in London and Tokyo, still Oct 31 in Los Angeles
   const now = new Date('2026-11-01T05:30:00Z');
   it.each([
     ['UTC', '2026-11-01'],
     ['Europe/London', '2026-11-01'],
     ['Asia/Tokyo', '2026-11-01'],
-    ['America/Vancouver', '2026-10-31'],
+    ['America/Los_Angeles', '2026-10-31'],
   ])('%s -> %s', (timezone, expected) => {
     expect(todayIn(timezone, now)).toBe(expected);
   });
 });
 
+// Daylight-saving rules are political data that changes: British Columbia moving to permanent
+// daylight time made America/Vancouver results differ between Node builds with older and newer
+// timezone databases. These tests use zones whose rules aren't in flux, and the app itself
+// never hard-codes an offset (it always asks the runtime's timezone database).
 describe('zonedTimeToUtc', () => {
   it.each([
     // [date, timezone, expected instant for 09:00 local]
     ['2026-11-03', 'UTC', '2026-11-03T09:00:00.000Z'],
-    ['2026-11-03', 'America/Vancouver', '2026-11-03T17:00:00.000Z'], // PST, UTC-8
-    ['2026-07-03', 'America/Vancouver', '2026-07-03T16:00:00.000Z'], // PDT, UTC-7
-    ['2026-03-08', 'America/Vancouver', '2026-03-08T16:00:00.000Z'], // spring-forward day, after 2am
-    ['2026-03-07', 'America/Vancouver', '2026-03-07T17:00:00.000Z'], // the day before
+    ['2026-11-03', 'America/Los_Angeles', '2026-11-03T17:00:00.000Z'], // PST, UTC-8
+    ['2026-07-03', 'America/Los_Angeles', '2026-07-03T16:00:00.000Z'], // PDT, UTC-7
+    ['2026-03-08', 'America/Los_Angeles', '2026-03-08T16:00:00.000Z'], // spring-forward day, after 2am
+    ['2026-03-07', 'America/Los_Angeles', '2026-03-07T17:00:00.000Z'], // the day before
     ['2026-10-25', 'Europe/London', '2026-10-25T09:00:00.000Z'], // back to GMT that morning
     ['2026-10-24', 'Europe/London', '2026-10-24T08:00:00.000Z'], // still BST
     ['2026-11-03', 'Asia/Kolkata', '2026-11-03T03:30:00.000Z'], // half-hour offset
@@ -73,8 +77,8 @@ describe('zonedTimeToUtc', () => {
   });
 
   it('moves a wall time skipped by a spring-forward to just after the gap', () => {
-    // 02:00 doesn't exist in Vancouver on 2026-03-08 (clocks jump from 02:00 to 03:00)
-    expect(zonedTimeToUtc('2026-03-08', 2, 'America/Vancouver').toISOString()).toBe(
+    // 02:00 doesn't exist in Los Angeles on 2026-03-08 (clocks jump from 02:00 to 03:00)
+    expect(zonedTimeToUtc('2026-03-08', 2, 'America/Los_Angeles').toISOString()).toBe(
       '2026-03-08T10:00:00.000Z', // = 03:00 PDT
     );
   });
@@ -82,8 +86,8 @@ describe('zonedTimeToUtc', () => {
 
 describe('zonedTimeToUtc on a fall-back day', () => {
   it('resolves a repeated wall time to the earlier instant', () => {
-    // 01:00 happens twice in Vancouver on 2026-11-01; the first is still PDT (UTC-7)
-    expect(zonedTimeToUtc('2026-11-01', 1, 'America/Vancouver').toISOString()).toBe(
+    // 01:00 happens twice in Los Angeles on 2026-11-01; the first is still PDT (UTC-7)
+    expect(zonedTimeToUtc('2026-11-01', 1, 'America/Los_Angeles').toISOString()).toBe(
       '2026-11-01T08:00:00.000Z',
     );
   });

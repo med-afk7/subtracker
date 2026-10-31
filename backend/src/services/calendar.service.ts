@@ -20,7 +20,10 @@ export interface CalendarEventDto {
   isPast: boolean;
 }
 
-export async function getCalendar(ctx: RequestContext, query: CalendarQuery) {
+// Expected charges from `from` to `to` (inclusive), priced in minor units: past ones at the
+// price that applied then, upcoming ones at today's price. Shared by the calendar and the
+// forecast so both come from the same recurrence engine and rules.
+export async function listExpectedCharges(ctx: RequestContext, query: CalendarQuery) {
   const today = todayIn(ctx.timezone);
 
   // Archived subscriptions are hidden everywhere, including the calendar
@@ -90,6 +93,11 @@ export async function getCalendar(ctx: RequestContext, query: CalendarQuery) {
     });
   });
   events.sort((a, b) => a.date.localeCompare(b.date) || a.sub.name.localeCompare(b.sub.name));
+  return events;
+}
+
+export async function getCalendar(ctx: RequestContext, query: CalendarQuery) {
+  const events = await listExpectedCharges(ctx, query);
 
   // Exact integer sums per currency; currencies are never combined
   const totals = new Map<string, { minor: number; count: number }>();

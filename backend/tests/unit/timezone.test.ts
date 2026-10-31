@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { isValidTimezone } from '../../src/domain/timezone.js';
 
 describe('isValidTimezone', () => {
-  it.each(['UTC', 'Europe/London', 'America/Vancouver', 'Asia/Kolkata'])('accepts %s', (tz) => {
+  it.each(['UTC', 'Europe/London', 'America/Los_Angeles', 'Asia/Kolkata'])('accepts %s', (tz) => {
     expect(isValidTimezone(tz)).toBe(true);
   });
 

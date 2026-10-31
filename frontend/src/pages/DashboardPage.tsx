@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { errorMessage } from '../api/client';
 import * as dashboardApi from '../api/dashboard.api';
 import CategoryBars from '../components/dashboard/CategoryBars';
+import ForecastSection from '../components/dashboard/ForecastSection';
 import PriceChanges from '../components/dashboard/PriceChanges';
 import SpendingOverview from '../components/dashboard/SpendingOverview';
 import SpendingTrends from '../components/dashboard/SpendingTrends';
@@ -69,6 +70,7 @@ export default function DashboardPage() {
             <UpcomingPayments payments={summary.upcoming} windowDays={summary.upcomingWindowDays} />
             <CategoryBars breakdown={breakdown} />
           </div>
+          <ForecastSection />
           {trends && <SpendingTrends trends={trends} />}
           <PriceChanges changes={summary.recentPriceChanges} />
         </>

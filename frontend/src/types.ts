@@ -198,3 +198,13 @@ export interface SpendingTrends {
     totals: { currency: string; subscriptionCount: number; monthlyEquivalent: string }[];
   }[];
 }
+
+export type ForecastRange = '30d' | '90d' | '12m';
+
+export interface Forecast {
+  range: ForecastRange;
+  from: string;
+  to: string;
+  totals: { currency: string; amount: string; count: number }[];
+  months: { month: string; totals: { currency: string; amount: string; count: number }[] }[];
+}

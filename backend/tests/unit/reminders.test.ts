@@ -41,7 +41,7 @@ describe('effectiveDaysBefore', () => {
 
 describe('reminderTime', () => {
   it('is 09:00 local time the given number of days before the charge', () => {
-    expect(reminderTime('2026-11-10', 3, 'America/Vancouver').toISOString()).toBe(
+    expect(reminderTime('2026-11-10', 3, 'America/Los_Angeles').toISOString()).toBe(
       '2026-11-07T17:00:00.000Z',
     );
     expect(reminderTime('2026-11-10', 0, 'UTC').toISOString()).toBe('2026-11-10T09:00:00.000Z');
@@ -71,11 +71,11 @@ describe('dueReminders', () => {
   });
 
   it('uses the user’s timezone for both the send time and "has the charge passed"', () => {
-    // 09:00 in Vancouver on Nov 7 is 17:00 UTC
-    expect(due('2026-11-07T16:59:00Z', monthly, 3, 'America/Vancouver')).toEqual([]);
-    expect(due('2026-11-07T17:00:00Z', monthly, 3, 'America/Vancouver')).toEqual(['2026-11-10']);
-    // 03:00 UTC on Nov 11 is still Nov 10 in Vancouver: the charge hasn't passed there
-    expect(due('2026-11-11T03:00:00Z', monthly, 3, 'America/Vancouver')).toEqual(['2026-11-10']);
+    // 09:00 in Los Angeles on Nov 7 is 17:00 UTC
+    expect(due('2026-11-07T16:59:00Z', monthly, 3, 'America/Los_Angeles')).toEqual([]);
+    expect(due('2026-11-07T17:00:00Z', monthly, 3, 'America/Los_Angeles')).toEqual(['2026-11-10']);
+    // 03:00 UTC on Nov 11 is still Nov 10 in Los Angeles: the charge hasn't passed there
+    expect(due('2026-11-11T03:00:00Z', monthly, 3, 'America/Los_Angeles')).toEqual(['2026-11-10']);
   });
 
   it('finds every charge whose reminder is due when the lead time exceeds the interval', () => {

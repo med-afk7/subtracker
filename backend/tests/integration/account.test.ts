@@ -14,9 +14,9 @@ describe('account settings', () => {
 
     const res = await agent
       .patch('/api/account')
-      .send({ timezone: 'America/Vancouver' })
+      .send({ timezone: 'America/Los_Angeles' })
       .expect(200);
-    expect(res.body.data.timezone).toBe('America/Vancouver');
+    expect(res.body.data.timezone).toBe('America/Los_Angeles');
 
     const bad = await agent.patch('/api/account').send({ timezone: 'Mars/Base' }).expect(400);
     expect(bad.body.error.details[0].path).toBe('timezone');

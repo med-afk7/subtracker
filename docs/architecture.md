@@ -430,6 +430,16 @@ sequenceDiagram
 - **Timezones:** "09:00 local" is converted with the built-in `Intl` API (Temporal's "compatible" rules for DST gaps and overlaps), tested on real transitions, so no date library is needed.
 - **Trigger:** `POST /api/internal/tick` with `Authorization: Bearer <CRON_SECRET>`, called every 15 minutes by `.github/workflows/reminders.yml`. `npm run worker` runs the same tick in a loop for local development or an always-on host.
 
+### Learned in Phase 8: timezone rules are data
+
+The first CI run failed only on GitHub: its newer Node build ships a newer timezone database in which
+British Columbia has moved to permanent daylight time, so `America/Vancouver` stayed at UTC-7 in
+November. The app was correct in both places, because it always asks the runtime's database and
+never hard-codes offsets. The tests were wrong: they asserted one region's political rules. DST
+tests now use zones whose rules aren't in flux (Los Angeles, London) plus fixed-offset zones
+(India, Kiribati). In production this means offsets follow whatever database the deployed Node
+version ships, so keeping Node patched keeps timezone rules current.
+
 ## 7. API
 
 **Conventions:**
