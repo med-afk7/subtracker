@@ -205,7 +205,10 @@ export default function LandingPage() {
 
       <footer className="landing-footer muted small">
         <span>Subtracker</span>
-        <a href="/api/docs">API docs</a>
+        <span className="footer-links">
+          <Link to="/privacy">Privacy</Link>
+          <a href="/api/docs">API docs</a>
+        </span>
       </footer>
     </main>
   );

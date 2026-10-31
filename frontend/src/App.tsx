@@ -7,6 +7,7 @@ import AccountPage from './pages/AccountPage';
 import CalendarPage from './pages/CalendarPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import LoginPage from './pages/LoginPage';
+import PrivacyPage from './pages/PrivacyPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
 import SignupPage from './pages/SignupPage';
 import SubscriptionDetailsPage from './pages/SubscriptionDetailsPage';
@@ -28,6 +29,7 @@ export default function App() {
         {/* Opened from emails, so they work whether or not someone is logged in */}
         <Route path="/verify-email" element={<VerifyEmailPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/privacy" element={<PrivacyPage />} />
 
         <Route path="/" element={<HomeRoute />} />
 

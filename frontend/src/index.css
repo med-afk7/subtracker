@@ -1881,3 +1881,26 @@ a.item-name:hover {
     padding: 0.4rem 0.4rem;
   }
 }
+
+.footer-links {
+  display: flex;
+  gap: 1.25rem;
+}
+
+/* Long-form text pages (privacy policy) */
+.legal article {
+  line-height: 1.65;
+}
+
+.legal h2 {
+  margin: 1.75rem 0 0.5rem;
+}
+
+.legal p,
+.legal ul {
+  margin: 0 0 0.9rem;
+}
+
+.legal li {
+  margin-bottom: 0.5rem;
+}
