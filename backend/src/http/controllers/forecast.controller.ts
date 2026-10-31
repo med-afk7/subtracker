@@ -1,9 +1,7 @@
 import type { RequestHandler } from 'express';
-import { z } from 'zod';
 import * as forecastService from '../../services/forecast.service.js';
 import { currentAuth } from '../middleware/requireAuth.js';
-
-const forecastQuerySchema = z.object({ range: z.enum(['30d', '90d', '12m']).default('90d') });
+import { forecastQuerySchema } from '../schemas/reports.schemas.js';
 
 export const getForecast: RequestHandler = async (req, res) => {
   const { userId, timezone } = currentAuth(req);

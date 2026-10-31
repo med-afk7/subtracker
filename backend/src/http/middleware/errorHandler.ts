@@ -23,9 +23,15 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     return;
   }
 
-  // Malformed JSON body (thrown by express.json)
+  // Body problems reported by express.json
   if (err?.type === 'entity.parse.failed') {
     res.status(400).json({ error: { code: 'INVALID_JSON', message: 'Invalid JSON body' } });
+    return;
+  }
+  if (err?.type === 'entity.too.large') {
+    res
+      .status(413)
+      .json({ error: { code: 'PAYLOAD_TOO_LARGE', message: 'Request body is too large' } });
     return;
   }
 

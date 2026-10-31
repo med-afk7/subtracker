@@ -112,6 +112,8 @@ describe('creating subscriptions', () => {
     ['custom reminder without days', { reminderMode: 'custom' }, 'reminderDaysBefore'],
     ['non-http link', { cancellationUrl: 'javascript:alert(1)' }, 'cancellationUrl'],
     ['card number as label', { paymentMethodLabel: '4111 1111 1111 1111' }, 'paymentMethodLabel'],
+    ['control characters in name', { name: 'Net\nflix' }, 'name'],
+    ['control characters in label', { paymentMethodLabel: 'Visa\u0007' }, 'paymentMethodLabel'],
     ['unknown category', { category: 'gaming' }, 'category'],
   ])('rejects %s', async (_case, overrides, path) => {
     const agent = await signedInAgent('ada@example.com');

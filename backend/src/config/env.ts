@@ -21,6 +21,9 @@ const envSchema = z.object({
     (value) => (value === '' ? undefined : value),
     z.string().min(32, 'must be at least 32 characters').optional(),
   ),
+  // How many proxies sit in front of the API (e.g. 2 for Vercel -> Render). Express then reads the
+  // real client IP from X-Forwarded-For, which rate limiting and logs depend on. 0 = no proxy.
+  TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
   // How often `npm run worker` runs a tick
   WORKER_INTERVAL_SECONDS: z.coerce.number().int().min(5).default(60),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).optional(),
@@ -45,6 +48,7 @@ export const env = {
   emailFrom: vars.EMAIL_FROM,
   authRateLimitMax: vars.AUTH_RATE_LIMIT_MAX,
   cronSecret: vars.CRON_SECRET,
+  trustProxy: vars.TRUST_PROXY,
   workerIntervalMs: vars.WORKER_INTERVAL_SECONDS * 1000,
   logLevel: vars.LOG_LEVEL ?? (vars.NODE_ENV === 'test' ? 'silent' : 'info'),
 };

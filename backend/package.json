@@ -11,6 +11,7 @@
     "drizzle-orm": "^0.45.4",
     "express": "^5.3.0",
     "express-rate-limit": "^8.7.2",
+    "helmet": "^8.3.0",
     "pg": "^8.23.1",
     "pino": "^10.4.0",
     "pino-http": "^11.0.0",
@@ -46,6 +47,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:reset": "tsx scripts/reset-dev-db.ts",
     "worker": "tsx src/worker.ts | pino-pretty",
-    "start:worker": "node dist/worker.js"
+    "start:worker": "node dist/worker.js",
+    "db:explain": "tsx scripts/explain-queries.ts",
+    "migrate:prod": "node dist/db/migrate.js"
   }
 }

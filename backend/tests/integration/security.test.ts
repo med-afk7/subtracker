@@ -57,3 +57,21 @@ describe('authentication is required', () => {
     expect(res.body.error.code).toBe('UNAUTHENTICATED');
   });
 });
+
+describe('security headers and limits', () => {
+  it('sends protective headers on API responses', async () => {
+    const res = await request(app).get('/api/health').expect(200);
+    expect(res.headers['x-content-type-options']).toBe('nosniff');
+    expect(res.headers['x-frame-options']).toBe('SAMEORIGIN');
+    expect(res.headers['content-security-policy']).toContain("default-src 'self'");
+    expect(res.headers['x-powered-by']).toBeUndefined();
+  });
+
+  it('refuses oversized request bodies', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'a@example.com', password: 'x'.repeat(30_000) });
+    expect(res.status).toBe(413);
+    expect(res.body.error.code).toBe('PAYLOAD_TOO_LARGE');
+  });
+});

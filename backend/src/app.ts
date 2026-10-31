@@ -1,5 +1,7 @@
 import cookieParser from 'cookie-parser';
 import express from 'express';
+import helmet from 'helmet';
+import { env } from './config/env.js';
 import { pinoHttp } from 'pino-http';
 import { errorHandler } from './http/middleware/errorHandler.js';
 import { notFoundHandler } from './http/middleware/notFound.js';
@@ -9,6 +11,7 @@ import authRouter from './http/routes/auth.routes.js';
 import calendarRouter from './http/routes/calendar.routes.js';
 import categoriesRouter from './http/routes/categories.routes.js';
 import dashboardRouter from './http/routes/dashboard.routes.js';
+import docsRouter from './http/routes/docs.routes.js';
 import forecastRouter from './http/routes/forecast.routes.js';
 import healthRouter from './http/routes/health.routes.js';
 import internalRouter from './http/routes/internal.routes.js';
@@ -19,13 +22,20 @@ import { logger } from './lib/logger.js';
 const app = express();
 
 app.disable('x-powered-by');
+// Behind proxies, req.ip must be the real client or every user would share one rate-limit bucket
+if (env.trustProxy > 0) app.set('trust proxy', env.trustProxy);
+// Security headers: no MIME sniffing, no framing, a deny-all CSP (the API only serves JSON and
+// CSV), and HSTS in production
+app.use(helmet({ strictTransportSecurity: env.isProduction }));
 // One structured log line per request (method, url, status, duration); sets req.log
 app.use(pinoHttp({ logger }));
-app.use(express.json());
+// Request bodies are small JSON objects; anything bigger is refused early
+app.use(express.json({ limit: '20kb' }));
 app.use(cookieParser());
 app.use(originCheck);
 
 app.use('/api/health', healthRouter);
+app.use('/api/docs', docsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/account', accountRouter);
 app.use('/api/calendar', calendarRouter);

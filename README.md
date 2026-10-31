@@ -1,17 +1,48 @@
 # Subtracker
 
-Track recurring subscriptions, see what they cost and when each one renews next.
+Subscriptions are easy to forget: a free trial that turns into a yearly charge, a price that
+quietly goes up, three streaming services when you watch one. Subtracker keeps every recurring
+expense in one place, tells you what they really cost per month and per year, shows when each
+charge is coming, and emails you before it happens.
 
-- **backend/**: Node.js, TypeScript, Express 5, Drizzle ORM on Postgres (Neon), zod, pino
-- **frontend/**: React, TypeScript, Vite
-- **docs/architecture.md**: architecture, database design, API plan and roadmap
+**Stack:** TypeScript everywhere. Express 5 API with Drizzle ORM on PostgreSQL (Neon), zod
+validation, pino logging; React + Vite frontend; Vitest + Supertest; GitHub Actions.
 
-> Work in progress, rebuilt phase by phase following [docs/architecture.md](docs/architecture.md).
-> Done: Phases 2 to 8: TypeScript foundation and CI, accounts (email verification, server-side
-> sessions, password reset, rate limiting), the subscription model with price history, the
-> dashboard with spending trends and forecasts, the billing calendar, email reminders
-> (Postgres-backed queue, retries, idempotent delivery), subscription details, and CSV export.
-> Next: Phase 9, production readiness and deployment.
+**Docs:** [architecture and design decisions](docs/architecture.md) ·
+[deployment guide](docs/deployment.md) · interactive API reference at `/api/docs` (OpenAPI 3.1)
+
+## What it does
+
+- **Accounts:** email + password with email verification, password reset, server-side sessions,
+  rate limiting, timezone, account deletion.
+- **Subscriptions:** any currency, weekly to multi-year billing, cancel/archive lifecycle, price
+  history kept when prices change, search/filter/sort/pagination, CSV export.
+- **Dashboard:** monthly-equivalent and yearly cost per currency, spending by category, upcoming
+  charges, recent price changes, monthly cost over time, and a 30-day/90-day/12-month forecast.
+- **Calendar:** every expected charge on a month grid, past ones at the price that applied then.
+- **Reminders:** an email at 09:00 in your timezone, a chosen number of days before each charge.
+
+## How it works (the interesting parts)
+
+- **Billing dates** come from one pure, heavily tested module. Every charge is computed from an
+  anchor date (`anchor + k × interval`), never from the previous charge, so a plan billed on the
+  31st bills Feb 28 and then Mar 31 again instead of drifting. Leap years, time zones and
+  daylight-saving changes are covered by tests. → [architecture §4.2](docs/architecture.md)
+- **Money** is integer minor units plus an ISO currency, exchanged as decimal strings. Totals keep
+  exact fractions and round once (three weekly $1 plans are $13.00 a month, not $12.99).
+  Currencies are never added together. → [§4.3](docs/architecture.md)
+- **Price history** is an append-only table written in the same transaction as the price change,
+  with the subscription row locked, so history and current price can't disagree.
+- **Reminders** use Postgres as the job queue: a unique index allows one reminder per charge,
+  workers claim rows with `FOR UPDATE SKIP LOCKED`, a lease plus a fencing token handles crashed
+  workers, temporary failures retry with backoff, and the provider's idempotency key covers the
+  crash-after-send window. Guarantee: at most one reminder per charge, never silently lost.
+  → [§6](docs/architecture.md)
+- **Security:** Argon2id passwords; session tokens and email tokens stored only as SHA-256
+  hashes; single-use, expiring links; no account enumeration; origin + JSON checks against CSRF on
+  top of `SameSite` cookies; per-IP and per-email rate limits; every query scoped to the owner
+  (another user's id is a 404, tested on every endpoint); CSV formula-injection protection;
+  security headers; secrets redacted from logs.
 
 ## Local setup
 
@@ -40,17 +71,27 @@ Requirements: Node.js 24, the [Neon CLI](https://neon.com/docs/cli) (`npm i -g n
    npm run dev:web   # http://localhost:5173, forwards /api to the API
    ```
 
-## Tests
+## Testing
 
-The integration tests run against a real Postgres database and **wipe its tables**, so they use a
-separate database: the Neon `test` branch locally, a Postgres container in CI.
+330+ automated tests, run in CI on every push:
+
+- **Unit tests** for the pure logic: billing dates (month ends, leap years, DST), money (rounding,
+  currency precision), lifecycle rules, reminder timing, CSV escaping, trends and forecasts.
+- **Integration tests** against a real Postgres database (Supertest over HTTP): every endpoint's
+  main flows and validation, ownership checks as a second user on every route, transactions
+  under concurrent edits, two reminder workers racing, crash recovery, retry and failure paths.
+- **Mutation checks during development:** removing an ownership filter, a retry wait or the
+  duplicate-reminder guard makes the matching test fail.
+
+The integration tests **wipe their database**, so they use a separate one: the Neon `test`
+branch locally, a fresh Postgres container in CI. The setup refuses to run against the
+development database.
 
 ```bash
 echo "TEST_DATABASE_URL=$(neon connection-string test)" > backend/.env.test
 npm test
+npm run db:explain -w backend   # seeds the test DB with 50k subscriptions and shows query plans
 ```
-
-The test setup refuses to run if `TEST_DATABASE_URL` points at the database in `.env.local`.
 
 ## Scripts (run from the repo root)
 
@@ -90,6 +131,11 @@ set the repository secrets `API_URL` and `CRON_SECRET`.
 
 > The tick processes every user in the database it points at. Don't run it against a database
 > holding real reminders unless you mean to send them.
+
+## Deployment
+
+Vercel (frontend, proxying `/api`) + Render (API) + Neon (Postgres) + Resend (email) + a GitHub
+Actions schedule for reminders. Step by step, with the trade-offs: [docs/deployment.md](docs/deployment.md).
 
 ## API
 

@@ -1,15 +1,11 @@
 import type { RequestHandler, Response } from 'express';
-import { z } from 'zod';
 import { formatAmount } from '../../domain/money.js';
 import { describeFrequency } from '../../domain/recurrence.js';
 import { todayIn } from '../../domain/plainDate.js';
 import { UTF8_BOM, csvRow, neutralizeFormula } from '../../lib/csv.js';
 import * as subscriptionsService from '../../services/subscriptions.service.js';
 import { currentAuth } from '../middleware/requireAuth.js';
-
-const exportQuerySchema = z.object({
-  type: z.enum(['subscriptions', 'price-history']).default('subscriptions'),
-});
+import { exportQuerySchema } from '../schemas/reports.schemas.js';
 
 // The file is written straight to the response: no temporary files that could leak
 function startCsv(res: Response, filename: string) {

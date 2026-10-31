@@ -440,6 +440,38 @@ tests now use zones whose rules aren't in flux (Los Angeles, London) plus fixed-
 (India, Kiribati). In production this means offsets follow whatever database the deployed Node
 version ships, so keeping Node patched keeps timezone rules current.
 
+### Phase 9 review
+
+**Security review.** Checked against the spec's list: password hashing (Argon2id), token storage
+(SHA-256 hashes, single-use, expiring), session invalidation (logout, password change and reset,
+account deletion), enumeration (identical answers and timing), CSRF (SameSite plus Origin and JSON
+checks), rate limits (per IP and per email), authorization (owner in every query, tested per
+route), input validation (zod at every boundary), logging (secrets redacted), error responses (no
+internals). Found and fixed:
+
+| Finding                                         | Risk                                                                               | Fix                                                                |
+| ----------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| No `trust proxy` behind Vercel/Render           | every user shares the proxy's rate-limit bucket: one attacker locks out all logins | `TRUST_PROXY` hop count; test proves per-client buckets            |
+| No security headers on API responses            | MIME sniffing, framing                                                             | `helmet` (nosniff, frame denial, deny-all CSP, HSTS in production) |
+| Oversized bodies returned 500                   | noisy errors, wasted work                                                          | 20 kB JSON limit, mapped to `413 PAYLOAD_TOO_LARGE`                |
+| Control characters accepted in names and labels | newlines in email subjects, CSV and logs                                           | rejected in single-line fields; notes keep line breaks             |
+
+Dependency audit: no known vulnerabilities in production dependencies.
+
+**Index review** (`npm run db:explain -w backend`: 2,000 users, 50,000 subscriptions, 68,000 price
+points, 144,000 deliveries). Every hot query uses an index: session lookup 0.04 ms (primary keys),
+subscription list 0.1 ms (`user_id, next_billing_date`, already sorted), reminder scheduler 1.2 ms
+(partial active index), dispatcher claim 0.04 ms (partial claimable index), price history and
+reminder history via their leading-column indexes. The two sequential scans are the right choice
+(`categories` has 7 rows; the scheduler joins nearly every user). No new indexes were added.
+
+**API documentation:** OpenAPI 3.1 at `/api/docs/openapi.json`, browsable at `/api/docs`. Request
+bodies and query parameters are generated from the zod schemas with `z.toJSONSchema`, so the docs
+match what the server validates; a test checks every route is documented.
+
+**Deployment:** see [deployment.md](deployment.md). Production migrations run with drizzle-orm's
+runtime migrator (`node dist/db/migrate.js`) before the API starts, so the server needs no dev tools.
+
 ## 7. API
 
 **Conventions:**

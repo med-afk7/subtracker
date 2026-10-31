@@ -2,11 +2,29 @@ import { z } from 'zod';
 import { isValidCurrency } from '../../domain/money.js';
 import { isPlainDate } from '../../domain/plainDate.js';
 
+// Control characters (newlines, tabs, bells...) have no place in a name or label, and would end up
+// in email subject lines, CSV files and logs. Multi-line notes may keep line breaks.
+// eslint-disable-next-line no-control-regex -- matching control characters is the point
+const CONTROL_CHARS = /[\u0000-\u001f\u007f]/;
+// eslint-disable-next-line no-control-regex -- as above, but allowing \n and \r
+const CONTROL_CHARS_EXCEPT_NEWLINES = /[\u0000-\u0009\u000b\u000c\u000e-\u001f\u007f]/;
+const noControlChars = (pattern: RegExp) => (value: string | null | undefined) =>
+  !value || !pattern.test(value);
+const CONTROL_CHAR_MESSAGE = 'Contains characters that aren’t allowed';
+
 // Optional text from forms: '' means "clear it" (null); undefined means "leave it unchanged"
-const optionalText = (max: number, label: string) =>
+const optionalText = (max: number, label: string, multiline = false) =>
   z.preprocess(
     (value) => (typeof value === 'string' && value.trim() === '' ? null : value),
-    z.string().trim().max(max, `${label} is at most ${max} characters`).nullable().optional(),
+    z
+      .string()
+      .trim()
+      .max(max, `${label} is at most ${max} characters`)
+      .refine(noControlChars(multiline ? CONTROL_CHARS_EXCEPT_NEWLINES : CONTROL_CHARS), {
+        message: CONTROL_CHAR_MESSAGE,
+      })
+      .nullable()
+      .optional(),
   );
 
 const optionalUrl = (label: string) =>
@@ -41,9 +59,14 @@ const paymentLabel = optionalText(50, 'Payment method label').refine(
 );
 
 const fields = {
-  name: z.string().trim().min(1, 'Name is required').max(100, 'Name is at most 100 characters'),
+  name: z
+    .string()
+    .trim()
+    .min(1, 'Name is required')
+    .max(100, 'Name is at most 100 characters')
+    .refine(noControlChars(CONTROL_CHARS), { message: CONTROL_CHAR_MESSAGE }),
   category: z.string().trim().min(1).max(50),
-  notes: optionalText(1000, 'Notes'),
+  notes: optionalText(1000, 'Notes', true),
   amount: amountSchema,
   currency: currencySchema,
   billingInterval: z.enum(['week', 'month', 'year'], {

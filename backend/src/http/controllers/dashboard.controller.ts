@@ -1,11 +1,7 @@
 import type { RequestHandler } from 'express';
-import { z } from 'zod';
 import * as dashboardService from '../../services/dashboard.service.js';
 import { currentAuth } from '../middleware/requireAuth.js';
-
-const trendsQuerySchema = z.object({
-  months: z.coerce.number().int().min(2).max(36).default(12),
-});
+import { trendsQuerySchema } from '../schemas/reports.schemas.js';
 
 export const getSummary: RequestHandler = async (req, res) => {
   const { userId, timezone } = currentAuth(req);

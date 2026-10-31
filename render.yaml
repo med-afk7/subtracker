@@ -1,0 +1,35 @@
+# Render Blueprint for the API (https://render.com/docs/blueprint-spec).
+# The frontend is deployed separately on Vercel (frontend/vercel.json), which proxies /api here.
+# Values marked `sync: false` are entered in the Render dashboard; none are committed.
+services:
+  - type: web
+    name: subtracker-api
+    runtime: node
+    plan: free
+    # Close to the Neon database (aws-us-east-2, Ohio)
+    region: ohio
+    # Dev dependencies are needed to compile TypeScript
+    buildCommand: npm ci --include=dev && npm run build -w backend
+    # Apply pending migrations, then start. One instance, so no two deploys migrate at once.
+    startCommand: npm run migrate:prod -w backend && npm run start -w backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '24'
+      - key: NODE_ENV
+        value: production
+      # Browser -> Vercel -> Render's load balancer -> API
+      - key: TRUST_PROXY
+        value: '2'
+      - key: DATABASE_URL # Neon pooled connection string (production branch)
+        sync: false
+      - key: DATABASE_URL_UNPOOLED # Neon direct connection string, for migrations
+        sync: false
+      - key: APP_URL # the Vercel URL, e.g. https://subtracker.vercel.app
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM # e.g. Subtracker <reminders@your-domain.com>
+        sync: false
+      - key: CRON_SECRET # also add as a GitHub secret for the Reminders workflow
+        generateValue: true
