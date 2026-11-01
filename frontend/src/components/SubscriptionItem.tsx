@@ -57,7 +57,7 @@ export default function SubscriptionItem({
       <div className="renewal">
         {s.state === 'active' && s.nextBillingDate && (
           <>
-            Next charge {formatDate(s.nextBillingDate)}
+            Next charge <span className="nowrap">{formatDate(s.nextBillingDate)}</span>
             <div>
               <span className="pill">{describeDaysUntil(s.nextBillingDate)}</span>
             </div>

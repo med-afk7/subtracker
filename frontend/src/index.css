@@ -24,9 +24,18 @@
   box-sizing: border-box;
 }
 
+html {
+  /* Stop phones from enlarging text on their own in landscape */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   min-height: 100vh;
+  /* A safety net: nothing should be wider than the screen, but if something is, the page
+     shouldn't slide sideways */
+  overflow-x: clip;
 }
 
 h1,
@@ -146,22 +155,31 @@ a:hover {
     padding: 0.4rem 0.8rem;
   }
 
+  /* The page links: each sized to its text, spread across the row, so the highlight sits
+     evenly around the current one and long labels never get cut off */
   .nav-links {
     order: 3;
     flex-basis: 100%;
     justify-content: space-between;
+    gap: 0.15rem;
   }
 
+  .nav-links a {
+    flex: 0 1 auto;
+    padding: 0.4rem 0.55rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 360px) {
   .nav-links {
     gap: 0;
   }
 
   .nav-links a {
-    flex: 1;
-    min-width: 0;
-    text-align: center;
-    padding: 0.4rem 0.1rem;
-    font-size: 0.85rem;
+    padding: 0.35rem 0.3rem;
+    font-size: 0.78rem;
   }
 }
 
@@ -230,6 +248,29 @@ textarea {
   transition:
     border-color 0.15s,
     box-shadow 0.15s;
+}
+
+/* iPhones give date fields their own minimum width (wider than a phone column) and center
+   the text; make them behave like the other fields */
+input[type='date'] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  line-height: 2.5rem;
+}
+
+input[type='date']::-webkit-date-and-time-value {
+  text-align: left;
+}
+
+/* iPhones zoom the whole page in when a field with text under 16px gets focus, and the page
+   stays zoomed (it "goes off the screen"). 16px fields on touch screens avoid that. */
+@media (pointer: coarse), (max-width: 600px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
 }
 
 input:focus,
@@ -325,6 +366,47 @@ textarea:focus {
   flex-direction: row-reverse;
   justify-content: flex-start;
   margin-top: 0.5rem;
+}
+
+/* Phones: the dialog uses almost the whole screen, its height follows the visible area (which
+   shrinks when the keyboard opens), the content scrolls inside it, and the buttons share
+   the width */
+@media (max-width: 600px) {
+  .modal {
+    width: calc(100% - 1rem);
+    max-width: none;
+    max-height: calc(100dvh - 1rem);
+    margin: auto;
+    overscroll-behavior: contain;
+  }
+
+  .modal-body {
+    padding: 1.25rem 1.1rem 1.25rem;
+  }
+
+  .modal .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .modal .form-actions > .button {
+    flex: 1;
+  }
+
+  /* Title and × stay in reach while a long form scrolls */
+  .modal-header {
+    position: sticky;
+    top: -1.25rem;
+    z-index: 1;
+    margin: -1.25rem -1.1rem 1rem;
+    padding: 1.1rem 1.1rem 0.75rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/* While a dialog is open, the page behind it doesn't scroll (iPhones otherwise scroll both) */
+body:has(dialog[open]) {
+  overflow: hidden;
 }
 
 .icon-button {
@@ -609,6 +691,10 @@ a.button:hover {
 }
 
 /* Text helpers */
+.nowrap {
+  white-space: nowrap;
+}
+
 .muted {
   color: var(--muted);
   font-size: 0.9rem;
@@ -1903,4 +1989,108 @@ a.item-name:hover {
 
 .legal li {
   margin-bottom: 0.5rem;
+}
+
+/* ---------- Phone layout fixes ---------- */
+@media (max-width: 600px) {
+  /* Subscription rows: logo beside the name; next charge and then the actions underneath it */
+  .subscription-item {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-areas:
+      'icon main'
+      '. renewal'
+      '. actions';
+    gap: 0.6rem 0.85rem;
+  }
+
+  .subscription-item > .avatar {
+    grid-area: icon;
+    align-self: start;
+  }
+
+  .subscription-item .item-main {
+    grid-area: main;
+  }
+
+  .subscription-item .renewal {
+    grid-area: renewal;
+    margin-left: 0;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  /* "in 21 days" right after the date instead of on its own line */
+  .subscription-item .renewal > div {
+    display: inline;
+    margin-left: 0.4rem;
+  }
+
+  .subscription-item .item-actions {
+    grid-area: actions;
+  }
+
+  /* Details page: label above value, so values like "Entertainment" never break mid-word */
+  .details-list div {
+    grid-template-columns: 1fr;
+    gap: 0.15rem;
+  }
+
+  /* Short values (dates, prices) stay on one line; the description wraps below instead */
+  .change-row .payment-name {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  /* Dashboard: the two figure tiles share the row equally */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .tile {
+    min-width: 0;
+  }
+
+  /* 30 days / 90 days / 12 months: full width, each label on one line */
+  .segmented {
+    display: flex;
+    width: 100%;
+  }
+
+  .segmented button {
+    flex: 1;
+    padding-inline: 0.4rem;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 420px) {
+  /* Filters one per row: side by side, their labels ("All categories") get cut off */
+  .toolbar,
+  .calendar-header .toolbar {
+    grid-template-columns: 1fr;
+  }
+
+  /* Service picker: two services per row, logo above the name so names get the full width
+     and only break between words */
+  .service-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .service-tile {
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.7rem 0.4rem;
+    text-align: center;
+  }
+
+  .service-tile span:last-child {
+    overflow-wrap: break-word;
+  }
+
+  .month-title {
+    font-size: 1rem;
+  }
 }
