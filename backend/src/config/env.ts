@@ -14,7 +14,7 @@ const envSchema = z
     APP_URL: z.url().default('http://localhost:5173'),
     // Without a key, emails are printed to the log instead of sent
     RESEND_API_KEY: optionalString(),
-    EMAIL_FROM: z.string().default('Subtracker <onboarding@resend.dev>'),
+    EMAIL_FROM: z.string().default('Subly <onboarding@resend.dev>'),
     // Requests allowed per IP (or per email) per 15 minutes on sensitive auth endpoints
     AUTH_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(10),
     // Shared secret for POST /api/internal/tick (the scheduled trigger). Unset: endpoint disabled.

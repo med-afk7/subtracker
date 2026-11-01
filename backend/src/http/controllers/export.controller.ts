@@ -29,7 +29,7 @@ export const exportCsv: RequestHandler = async (req, res) => {
 
   if (type === 'price-history') {
     const rows = await subscriptionsService.listAllPriceHistory(ctx);
-    startCsv(res, `subtracker-price-history-${date}.csv`);
+    startCsv(res, `subly-price-history-${date}.csv`);
     res.write(
       csvRow(['Subscription', 'Effective date', 'Price', 'Currency', 'Recorded at', 'Source']),
     );
@@ -50,7 +50,7 @@ export const exportCsv: RequestHandler = async (req, res) => {
   }
 
   const subs = await subscriptionsService.listAllSubscriptions(ctx);
-  startCsv(res, `subtracker-subscriptions-${date}.csv`);
+  startCsv(res, `subly-subscriptions-${date}.csv`);
   res.write(
     csvRow([
       'Name',

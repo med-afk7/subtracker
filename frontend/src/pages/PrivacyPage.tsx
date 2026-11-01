@@ -16,8 +16,8 @@ export default function PrivacyPage() {
         <p className="muted small">Last updated {UPDATED}</p>
 
         <p>
-          Subtracker is a personal project that helps you keep track of your subscriptions. This
-          page explains what it stores, why, and how to remove it.
+          Subly is a personal project that helps you keep track of your subscriptions. This page
+          explains what it stores, why, and how to remove it.
         </p>
 
         <h2>What we store</h2>
@@ -49,9 +49,9 @@ export default function PrivacyPage() {
 
         <h2>How it’s used</h2>
         <p>
-          Only to run Subtracker for you: logging you in, showing your subscriptions, and emailing
-          you account messages and the renewal reminders you asked for. Your data is never sold,
-          shared for advertising, or used for anything else.
+          Only to run Subly for you: logging you in, showing your subscriptions, and emailing you
+          account messages and the renewal reminders you asked for. Your data is never sold, shared
+          for advertising, or used for anything else.
         </p>
 
         <h2>Services that handle it</h2>

@@ -1,8 +1,8 @@
 {
-  "name": "subtracker-api",
+  "name": "subly-api",
   "version": "1.0.0",
   "private": true,
-  "description": "Subtracker API",
+  "description": "Subly API",
   "main": "dist/server.js",
   "dependencies": {
     "argon2": "^0.45.1",

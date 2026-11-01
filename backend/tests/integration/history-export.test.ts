@@ -98,7 +98,7 @@ describe('CSV export', () => {
     const res = await agent.get('/api/subscriptions/export').expect(200);
     expect(res.headers['content-type']).toBe('text/csv; charset=utf-8');
     expect(res.headers['content-disposition']).toMatch(
-      /^attachment; filename="subtracker-subscriptions-\d{4}-\d{2}-\d{2}\.csv"$/,
+      /^attachment; filename="subly-subscriptions-\d{4}-\d{2}-\d{2}\.csv"$/,
     );
     expect(res.headers['cache-control']).toBe('no-store');
     expect(res.text.startsWith('\uFEFF')).toBe(true);
@@ -141,7 +141,7 @@ describe('CSV export', () => {
       .send({ amount: '12.99', priceEffectiveDate: '2026-06-01' });
 
     const res = await agent.get('/api/subscriptions/export?type=price-history').expect(200);
-    expect(res.headers['content-disposition']).toMatch(/subtracker-price-history-/);
+    expect(res.headers['content-disposition']).toMatch(/subly-price-history-/);
     const [header, first, second] = lines(res);
     expect(header).toBe('Subscription,Effective date,Price,Currency,Recorded at,Source');
     expect(first).toMatch(/^Spotify,2026-01-10,9\.99,USD,.+,starting price$/);

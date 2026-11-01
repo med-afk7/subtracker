@@ -48,7 +48,7 @@ describe('registration', () => {
 
     expect(existingEmail.status).toBe(newEmail.status);
     expect(existingEmail.body).toEqual(newEmail.body);
-    expect(lastEmailTo('ada@example.com').subject).toBe('You already have a Subtracker account');
+    expect(lastEmailTo('ada@example.com').subject).toBe('You already have a Subly account');
 
     // The original password still works; the second sign-up changed nothing
     await login('ada@example.com').expect(200);

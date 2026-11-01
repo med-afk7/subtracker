@@ -1,5 +1,5 @@
 {
-  "name": "subtracker",
+  "name": "subly",
   "private": true,
   "workspaces": [
     "backend",

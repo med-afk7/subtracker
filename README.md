@@ -1,7 +1,7 @@
-# Subtracker
+# Subly
 
 Subscriptions are easy to forget: a free trial that turns into a yearly charge, a price that
-quietly goes up, three streaming services when you watch one. Subtracker keeps every recurring
+quietly goes up, three streaming services when you watch one. Subly keeps every recurring
 expense in one place, tells you what they really cost per month and per year, shows when each
 charge is coming, and emails you before it happens.
 

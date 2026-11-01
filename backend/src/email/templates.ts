@@ -17,8 +17,8 @@ function layout(to: string, subject: string, intro: string, linkLabel: string, u
 export const verifyEmailMessage = (to: string, token: string) =>
   layout(
     to,
-    'Confirm your email for Subtracker',
-    'Welcome to Subtracker! Confirm your email address to start tracking your subscriptions. The link expires in 24 hours.',
+    'Confirm your email for Subly',
+    'Welcome to Subly! Confirm your email address to start tracking your subscriptions. The link expires in 24 hours.',
     'Confirm email',
     `${env.appUrl}/verify-email?token=${token}`,
   );
@@ -26,8 +26,8 @@ export const verifyEmailMessage = (to: string, token: string) =>
 export const resetPasswordMessage = (to: string, token: string) =>
   layout(
     to,
-    'Reset your Subtracker password',
-    'Someone asked to reset the password for your Subtracker account. The link expires in 30 minutes and works once.',
+    'Reset your Subly password',
+    'Someone asked to reset the password for your Subly account. The link expires in 30 minutes and works once.',
     'Choose a new password',
     `${env.appUrl}/reset-password?token=${token}`,
   );
@@ -37,8 +37,8 @@ export const resetPasswordMessage = (to: string, token: string) =>
 export const accountExistsMessage = (to: string) =>
   layout(
     to,
-    'You already have a Subtracker account',
-    'Someone tried to create a Subtracker account with this email address, but you already have one. You can log in, or reset your password if you forgot it.',
+    'You already have a Subly account',
+    'Someone tried to create a Subly account with this email address, but you already have one. You can log in, or reset your password if you forgot it.',
     'Reset your password',
     `${env.appUrl}/forgot-password`,
   );
@@ -75,7 +75,7 @@ export function upcomingChargeMessage(input: {
   const subject = `${input.subscriptionName} renews ${whenText(input.daysBefore)} (${amount})`;
   const intro = `${input.subscriptionName} is expected to renew ${whenText(input.daysBefore)}, on ${date}, for ${amount}.`;
   const disclaimer =
-    'This is based on the billing schedule you saved in Subtracker, not on your bank or the provider.';
+    'This is based on the billing schedule you saved in Subly, not on your bank or the provider.';
   const subscriptionsUrl = `${env.appUrl}/subscriptions`;
   const settingsUrl = `${env.appUrl}/account`;
 

@@ -75,8 +75,8 @@ export function CancelForm({
     <DateActionForm
       intro={
         <p>
-          This records that you cancelled <strong>{subscription.name}</strong>. Subtracker can’t
-          cancel it with the provider, so make sure you’ve done that too
+          This records that you cancelled <strong>{subscription.name}</strong>. Subly can’t cancel
+          it with the provider, so make sure you’ve done that too
           {subscription.cancellationUrl ? (
             <>
               {' '}

@@ -3,7 +3,7 @@
 # Values marked `sync: false` are entered in the Render dashboard; none are committed.
 services:
   - type: web
-    name: subtracker-api
+    name: subtracker-api # the Render service id; renaming it would create a new service and URL
     runtime: node
     plan: free
     # Close to the Neon database (aws-us-east-2, Ohio)
@@ -25,11 +25,11 @@ services:
         sync: false
       - key: DATABASE_URL_UNPOOLED # Neon direct connection string, for migrations
         sync: false
-      - key: APP_URL # the Vercel URL, e.g. https://subtracker.vercel.app
+      - key: APP_URL # the Vercel URL, e.g. https://trysubly.app
         sync: false
       - key: RESEND_API_KEY
         sync: false
-      - key: EMAIL_FROM # e.g. Subtracker <reminders@your-domain.com>
+      - key: EMAIL_FROM # e.g. Subly <reminders@trysubly.app>
         sync: false
       - key: GOOGLE_CLIENT_ID # optional: "Continue with Google" (see docs/deployment.md)
         sync: false

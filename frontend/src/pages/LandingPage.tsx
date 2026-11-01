@@ -102,7 +102,7 @@ const STEPS = [
 
 function ProductPreview() {
   return (
-    <div className="landing-preview" aria-label="Example of the Subtracker dashboard">
+    <div className="landing-preview" aria-label="Example of the Subly dashboard">
       <div className="card preview-card">
         <div className="preview-header">
           <span className="preview-title">Upcoming renewals</span>
@@ -145,7 +145,7 @@ export default function LandingPage() {
           <p className="eyebrow">Subscription tracker</p>
           <h1>Know what you pay for, before it renews.</h1>
           <p className="landing-lede">
-            Subtracker keeps all your subscriptions in one place, emails you before each charge, and
+            Subly keeps all your subscriptions in one place, emails you before each charge, and
             shows what they’ll cost you this year.
           </p>
           <div className="landing-actions">
@@ -204,7 +204,7 @@ export default function LandingPage() {
       </section>
 
       <footer className="landing-footer muted small">
-        <span>Subtracker</span>
+        <span>Subly</span>
         <span className="footer-links">
           <Link to="/privacy">Privacy</Link>
           <a href="/api/docs">API docs</a>

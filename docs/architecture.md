@@ -1,4 +1,4 @@
-# Subtracker: Architecture and Plan (Phase 1)
+# Subly: Architecture and Plan (Phase 1)
 
 Status: **proposal for review** (2026-10-31). Nothing in this document is implemented yet unless it says so.
 Requirements source: `forclaude` (the project specification).

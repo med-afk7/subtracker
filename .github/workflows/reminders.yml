@@ -2,7 +2,7 @@
 # endpoint. Free alternative to an always-on worker (docs §6, decision D3).
 #
 # Repository secrets needed:
-#   API_URL      e.g. https://subtracker-api.example.com
+#   API_URL      e.g. https://subtracker-api-hwny.onrender.com
 #   CRON_SECRET  same value as the API's CRON_SECRET (at least 32 characters)
 #
 # GitHub may start scheduled runs late or skip some under load, and it pauses schedules in

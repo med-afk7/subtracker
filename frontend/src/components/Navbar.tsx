@@ -7,8 +7,8 @@ export default function Navbar() {
   return (
     <header className="navbar">
       <div className="navbar-left">
-        <Link className="brand" to="/" aria-label="Subtracker home">
-          <span className="brand-name">Subtracker</span>
+        <Link className="brand" to="/" aria-label="Subly home">
+          <span className="brand-name">Subly</span>
         </Link>
 
         {/* NavLink adds an "active" class to the link for the current page */}

@@ -512,7 +512,7 @@ export function buildOpenApiDocument() {
   return {
     openapi: '3.1.0',
     info: {
-      title: 'Subtracker API',
+      title: 'Subly API',
       version: '1.0.0',
       description:
         "Track recurring subscriptions: costs, renewals, price history, reminders. JSON in and out; state-changing requests must send `Content-Type: application/json` and, from browsers, come from the app's own origin. Money is a decimal string plus an ISO 4217 currency; calendar dates are `YYYY-MM-DD`.",
